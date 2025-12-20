@@ -28,8 +28,10 @@ func main() {
 	defer db.Close()
 
 	router := mux.NewRouter()
-	wrappedRouter := middleware.Recover()(router)
-	wrappedRouter = middleware.Logger(logger)(wrappedRouter)
+	router.Use(
+		middleware.Logger(logger),
+		middleware.Recover(),
+	)
 
 	store := postgres.New(db)
 	userService := userService.New(store)
@@ -38,7 +40,7 @@ func main() {
 
 	server := http.Server{
 		Addr:    config.HTTPServer.BindAddr,
-		Handler: wrappedRouter,
+		Handler: router,
 	}
 
 	if err := server.ListenAndServe(); err != nil {

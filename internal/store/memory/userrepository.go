@@ -5,11 +5,11 @@ import (
 	"http-rest-api/internal/store"
 )
 
-type userRepository struct {
+type UserRepository struct {
 	users map[string]*model.User
 }
 
-func (r *userRepository) Create(u *model.User) error {
+func (r *UserRepository) Create(u *model.User) error {
 	if err := u.Validate(); err != nil {
 		return err
 	}
@@ -24,7 +24,7 @@ func (r *userRepository) Create(u *model.User) error {
 	return nil
 }
 
-func (r *userRepository) FindByEmail(email string) (*model.User, error) {
+func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
 	u, ok := r.users[email]
 	if !ok {
 		return nil, store.ErrRecordNotFound
@@ -33,6 +33,6 @@ func (r *userRepository) FindByEmail(email string) (*model.User, error) {
 }
 
 // mock
-func (r *userRepository) FindById(id int) (*model.User, error) {
+func (r *UserRepository) FindById(id int) (*model.User, error) {
 	return &model.User{}, nil
 }

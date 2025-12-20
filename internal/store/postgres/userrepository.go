@@ -9,11 +9,11 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type userRepository struct {
+type UserRepository struct {
 	db *sql.DB
 }
 
-func (r *userRepository) Create(u *model.User) error {
+func (r *UserRepository) Create(u *model.User) error {
 	err := r.db.QueryRow(
 		"INSERT INTO users(email, hashed_password) VALUES ($1, $2) RETURNING id",
 		u.Email,
@@ -29,7 +29,7 @@ func (r *userRepository) Create(u *model.User) error {
 	return nil
 }
 
-func (r *userRepository) FindById(id int) (*model.User, error) {
+func (r *UserRepository) FindById(id int) (*model.User, error) {
 	u := &model.User{}
 	if err := r.db.QueryRow(
 		"SELECT id, email FROM users WHERE id = $1",
@@ -46,7 +46,7 @@ func (r *userRepository) FindById(id int) (*model.User, error) {
 	return u, nil
 }
 
-func (r *userRepository) FindByEmail(email string) (*model.User, error) {
+func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
 	u := &model.User{}
 	if err := r.db.QueryRow(
 		"SELECT id, email, hashed_password FROM users WHERE email = $1",

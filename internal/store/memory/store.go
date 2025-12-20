@@ -11,7 +11,7 @@ type Store struct {
 
 func New() *Store {
 	return &Store{
-		user: &userRepository{
+		user: &UserRepository{
 			users: make(map[string]*model.User),
 		},
 	}

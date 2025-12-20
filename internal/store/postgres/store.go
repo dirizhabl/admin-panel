@@ -15,7 +15,7 @@ type Store struct {
 func New(db *sql.DB) store.Store {
 	return &Store{
 		db: db,
-		userRepository: &userRepository{
+		userRepository: &UserRepository{
 			db: db,
 		},
 	}

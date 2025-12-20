@@ -40,7 +40,7 @@ func (h *Handler) FindUser() http.HandlerFunc {
 			h.Error(w, errors.New("cannot convert to int"))
 			return
 		}
-		
+
 		u, err := h.service.FindUserById(id)
 		if err != nil {
 			h.Error(w, err)
