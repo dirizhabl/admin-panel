@@ -7,18 +7,21 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type User struct {
-	ID              int    `json:"id"`
-	Email           string `json:"-"`
-	Password        string `json:"-"`
-	Hashed_password string `json:"-"`
-}
-
 var (
 	ErrEmptyPassword = errors.New("length of password must be more 0")
 	ErrEmptyEmail    = errors.New("length of email must be more 0")
 	ErrNotValidEmail = errors.New("email must contain \"@\"")
 )
+
+type User struct {
+	ID              int
+	Email           string `db:"email"`
+	Password        string
+	Hashed_password string
+	FirstName       string `db:"first_name"`
+	LastName        string `db:"last_name"`
+	Age             int16  `db:"age"`
+}
 
 func (u *User) Validate() error {
 	var errs []error

@@ -1,18 +1,18 @@
 package postgres
 
 import (
-	"database/sql"
 	"http-rest-api/internal/store"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jmoiron/sqlx"
 )
 
 type Store struct {
-	db             *sql.DB
+	db             *sqlx.DB
 	userRepository store.UserRepository
 }
 
-func New(db *sql.DB) store.Store {
+func New(db *sqlx.DB) store.Store {
 	return &Store{
 		db: db,
 		userRepository: &UserRepository{

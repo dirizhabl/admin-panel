@@ -5,5 +5,9 @@ type CreateUser struct {
 }
 
 type GetUser struct {
-	ID int `json:"id"`
+	ID        int    `json:"id"`
+	Email     string `json:"email"`
+	FirstName string `json:"first_name,omitempty"`
+	LastName  string `json:"last_name,omitempty"`
+	Age       int16  `json:"age,omitempty"`
 }

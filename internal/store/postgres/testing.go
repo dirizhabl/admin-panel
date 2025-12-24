@@ -1,18 +1,17 @@
 package postgres
 
 import (
-	"database/sql"
 	"fmt"
 	"strings"
 	"testing"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jmoiron/sqlx"
 )
 
-func TestDB(t *testing.T, databaseURL string) (*sql.DB, func(...string)) {
+func TestDB(t *testing.T, databaseURL string) (*sqlx.DB, func(...string)) {
 	t.Helper()
-
-	db, err := sql.Open("pgx", databaseURL)
+	db, err := sqlx.Open("pgx", databaseURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,20 +28,4 @@ func TestDB(t *testing.T, databaseURL string) (*sql.DB, func(...string)) {
 		}
 		db.Close()
 	}
-
-	// config := &config.Store{}
-	// config.DatabaseURL = databaseURL
-	// s := New(config)
-	// if err := s.Open(); err != nil {
-	// 	t.Fatal(err)
-	// }
-
-	// return s, func(tables ...string) {
-	// 	if len(tables) > 0 {
-	// 		if _, err := s.db.Exec(fmt.Sprintf("TRUNCATE %s CASCADE", strings.Join(tables, ", "))); err != nil {
-	// 			t.Fatal(err)
-	// 		}
-	// 	}
-	// 	s.Close()
-	// }
 }

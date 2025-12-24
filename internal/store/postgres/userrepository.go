@@ -3,14 +3,17 @@ package postgres
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"http-rest-api/internal/model"
 	"http-rest-api/internal/store"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jmoiron/sqlx"
 )
 
 type UserRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
 func (r *UserRepository) Create(u *model.User) error {
@@ -62,4 +65,42 @@ func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
 		return nil, err
 	}
 	return u, nil
+}
+
+func (r *UserRepository) Update(u *model.User) error {
+	setParts := []string{}
+	args := map[string]any{"id": u.ID}
+	if u.FirstName != "" {
+		setParts = append(setParts, "first_name = :first_name")
+		args["first_name"] = u.FirstName
+	}
+	if u.LastName != "" {
+		setParts = append(setParts, "last_name = :last_name")
+		args["last_name"] = u.LastName
+	}
+	if u.Age != 0 {
+		setParts = append(setParts, "age = :age")
+		args["age"] = u.Age
+	}
+	if len(setParts) == 0 {
+		return errors.New("no data")
+	}
+
+	query := fmt.Sprintf(
+		"UPDATE users SET %s WHERE id = :id RETURNING email", 
+		strings.Join(setParts, ", "),
+	)
+
+	namedQuery, namedArgs, err := sqlx.Named(query, args)
+	if err != nil {
+		return err
+	}
+
+	namedQuery = r.db.Rebind(namedQuery)
+
+	err = r.db.QueryRow(namedQuery, namedArgs...).Scan(&u.Email)
+	if err != nil {
+		return err
+	}
+	return nil
 }

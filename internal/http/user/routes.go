@@ -50,6 +50,30 @@ func (h *Handler) FindUser() http.HandlerFunc {
 	}
 }
 
+func (h *Handler) UpdateUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		pathVars := mux.Vars(r)
+		id, err := strconv.Atoi(pathVars["id"])
+		if err != nil {
+			h.Error(w, errors.New("cannot convert to int"))
+			return
+		}
+
+		req := &req.UpdateUser{}
+		req.ID = id
+		if err := h.BindJson(w, r, req); err != nil {
+			return 
+		}
+
+		u, err := h.service.UpdateUser(req)
+		if err != nil {
+			h.Error(w, err)
+			return
+		}
+		h.JSON(200, w, u)
+	}
+}
+
 func (h *Handler) JSON(statusCode int, w http.ResponseWriter, response any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)

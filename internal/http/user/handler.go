@@ -26,4 +26,5 @@ func New(logger *logrus.Logger, router *mux.Router, service *user.Service) *Hand
 func (h *Handler) registerRoutes() {
 	h.router.HandleFunc("/users", h.CreateUser()).Methods("POST")
 	h.router.HandleFunc("/users/{id}", h.FindUser()).Methods("GET")
+	h.router.HandleFunc("/users/{id}", h.UpdateUser()).Methods("PATCH")
 }

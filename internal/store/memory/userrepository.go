@@ -36,3 +36,7 @@ func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
 func (r *UserRepository) FindById(id int) (*model.User, error) {
 	return &model.User{}, nil
 }
+
+func (r *UserRepository) Update(u *model.User) error {
+	return nil
+}

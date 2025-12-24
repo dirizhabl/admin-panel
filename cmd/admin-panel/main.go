@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"http-rest-api/internal/config"
 	"http-rest-api/internal/http/middleware"
 	userHTTP "http-rest-api/internal/http/user"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 )
 
@@ -48,8 +48,8 @@ func main() {
 	}
 }
 
-func newOpenDB(config *config.Store) (*sql.DB, error) {
-	db, err := sql.Open("pgx", config.DatabaseURL)
+func newOpenDB(config *config.Store) (*sqlx.DB, error) {
+	db, err := sqlx.Open("pgx", config.DatabaseURL)
 	if err != nil {
 		return nil, err
 	}
