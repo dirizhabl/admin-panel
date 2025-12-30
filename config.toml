@@ -5,4 +5,4 @@ bind_addr = ":8080"
 level = "debug"
 
 [store]
-database_url = "host=localhost dbname=restapi_dev user=postgres password=123 sslmode=disable"
+database_url = "postgresql://postgres:123@localhost:5434/admin_dev"
