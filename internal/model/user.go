@@ -15,12 +15,19 @@ var (
 
 type User struct {
 	ID              int
-	Email           string `db:"email"`
+	Email           string
 	Password        string
 	Hashed_password string
-	FirstName       string `db:"first_name"`
-	LastName        string `db:"last_name"`
-	Age             int16  `db:"age"`
+	FirstName       string
+	LastName        string
+	Age             int16
+}
+
+type UserUpdate struct {
+	ID        int
+	FirstName *string
+	LastName  *string
+	Age       *int16
 }
 
 func (u *User) Validate() error {

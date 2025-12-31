@@ -37,6 +37,6 @@ func (r *UserRepository) FindById(id int) (*model.User, error) {
 	return &model.User{}, nil
 }
 
-func (r *UserRepository) Update(u *model.User) error {
-	return nil
+func (r *UserRepository) Update(upd *model.UserUpdate) (*model.User, error) {
+	return &model.User{}, nil
 }

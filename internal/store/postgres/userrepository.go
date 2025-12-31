@@ -3,10 +3,8 @@ package postgres
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"http-rest-api/internal/model"
 	"http-rest-api/internal/store"
-	"strings"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
@@ -67,40 +65,48 @@ func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
 	return u, nil
 }
 
-func (r *UserRepository) Update(u *model.User) error {
-	setParts := []string{}
-	args := map[string]any{"id": u.ID}
-	if u.FirstName != "" {
-		setParts = append(setParts, "first_name = :first_name")
-		args["first_name"] = u.FirstName
+func (r *UserRepository) Update(dto *model.UserUpdate) (*model.User, error) {
+	args := []any{
+		dto.FirstName != nil, dto.FirstName,
+		dto.LastName != nil, dto.LastName,
+		dto.Age != nil, dto.Age,
+		dto.ID,
 	}
-	if u.LastName != "" {
-		setParts = append(setParts, "last_name = :last_name")
-		args["last_name"] = u.LastName
-	}
-	if u.Age != 0 {
-		setParts = append(setParts, "age = :age")
-		args["age"] = u.Age
-	}
-	if len(setParts) == 0 {
-		return errors.New("no data")
-	}
-
-	query := fmt.Sprintf(
-		"UPDATE users SET %s WHERE id = :id RETURNING email", 
-		strings.Join(setParts, ", "),
-	)
-
-	namedQuery, namedArgs, err := sqlx.Named(query, args)
-	if err != nil {
-		return err
+	var userRow userRow
+	const query = `
+		UPDATE users
+        SET
+            first_name = CASE WHEN $1 THEN $2 ELSE first_name END,
+            last_name  = CASE WHEN $3 THEN $4 ELSE last_name END,
+            age        = CASE WHEN $5 THEN $6 ELSE age END
+        WHERE id = $7
+        RETURNING id, email, first_name, last_name, age;
+	`
+	if err := r.db.QueryRow(query, args...).Scan(
+		&userRow.ID, &userRow.Email, &userRow.FirstName, &userRow.LastName, &userRow.Age,
+	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, store.ErrRecordNotFound
+		}
+		return nil, err
 	}
 
-	namedQuery = r.db.Rebind(namedQuery)
-
-	err = r.db.QueryRow(namedQuery, namedArgs...).Scan(&u.Email)
-	if err != nil {
-		return err
+	user := &model.User{
+		ID:    userRow.ID,
+		Email: userRow.Email,
 	}
-	return nil
+
+	if userRow.FirstName != nil {
+		user.FirstName = *userRow.FirstName
+	}
+
+	if userRow.LastName != nil {
+		user.LastName = *userRow.LastName
+	}
+
+	if userRow.Age != nil {
+		user.Age = *userRow.Age
+	}
+
+	return user, nil
 }

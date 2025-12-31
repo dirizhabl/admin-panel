@@ -47,14 +47,14 @@ func (s *Service) FindUserById(id int) (*resp.GetUser, error) {
 	return &resp.GetUser{ID: u.ID}, nil
 }
 
-func (s *Service) UpdateUser(req *req.UpdateUser) (*resp.GetUser, error) {
-	u := &model.User{
-		ID: req.ID,
+func (s *Service) UpdateUser(id int, req *req.UserUpdate) (*resp.GetUser, error) {
+	dto := &model.UserUpdate{
+		ID:        id,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Age:       req.Age,
 	}
-	err := s.store.User().Update(u)
+	u, err := s.store.User().Update(dto)
 	if err != nil {
 		return nil, err
 	}

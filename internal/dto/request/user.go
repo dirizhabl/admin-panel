@@ -5,9 +5,8 @@ type CreateUser struct {
 	Password string `json:"password"`
 }
 
-type UpdateUser struct {
-	ID        int
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Age       int16  `json:"age"`
+type UserUpdate struct {
+	FirstName *string `json:"first_name"`
+	LastName  *string `json:"last_name"`
+	Age       *int16  `json:"age"`
 }

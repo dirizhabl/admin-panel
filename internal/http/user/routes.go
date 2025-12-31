@@ -59,13 +59,12 @@ func (h *Handler) UpdateUser() http.HandlerFunc {
 			return
 		}
 
-		req := &req.UpdateUser{}
-		req.ID = id
+		req := &req.UserUpdate{}
 		if err := h.BindJson(w, r, req); err != nil {
-			return 
+			return
 		}
 
-		u, err := h.service.UpdateUser(req)
+		u, err := h.service.UpdateUser(id, req)
 		if err != nil {
 			h.Error(w, err)
 			return
