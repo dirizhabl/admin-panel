@@ -19,20 +19,18 @@ func New(store store.Store) *Service {
 
 func (s *Service) CreateUser(req *req.CreateUser) (*resp.CreateUser, error) {
 	u := &model.User{
-		Email:    req.Email,
-		Password: req.Password,
+		Email: req.Email,
 	}
-	// if err := u.Validate(); err != nil {
-	// 	return nil, err
-	// }
-	if err := u.BeforeCreate(); err != nil {
+	if err := u.BeforeCreate(req.Password); err != nil {
+		return nil, err
+	}
+	if err := u.Validate(); err != nil {
 		return nil, err
 	}
 	if err := s.store.User().Create(u); err != nil {
 		return nil, err
 	}
 
-	u.Sanitize()
 	return &resp.CreateUser{ID: u.ID}, nil
 }
 
@@ -41,8 +39,6 @@ func (s *Service) FindUserById(id int) (*resp.GetUser, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	u.Sanitize()
 
 	return &resp.GetUser{ID: u.ID}, nil
 }

@@ -1,26 +1,8 @@
 package model
 
-import "strings"
+import "errors"
 
-type ValidationErrors []error
-
-// for logs
-func (v ValidationErrors) Error() string {
-	var sb strings.Builder
-	for i, err := range v {
-		if i > 0 {
-			sb.WriteString("; ")
-		}
-		sb.WriteString(err.Error())
-	}
-	return sb.String()
-}
-
-func (v ValidationErrors) Errors() []string {
-	result := make([]string, len(v))
-
-	for i, err := range v {
-		result[i] = err.Error()
-	}
-	return result
-}
+var (
+	ErrEmptyPassword = errors.New("length of password must be more 0")
+	ErrEmptyEmail    = errors.New("length of email must be more 0")
+)

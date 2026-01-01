@@ -1,26 +1,14 @@
 package model
 
-import (
-	"errors"
-	"strings"
-
-	"golang.org/x/crypto/bcrypt"
-)
-
-var (
-	ErrEmptyPassword = errors.New("length of password must be more 0")
-	ErrEmptyEmail    = errors.New("length of email must be more 0")
-	ErrNotValidEmail = errors.New("email must contain \"@\"")
-)
+import "golang.org/x/crypto/bcrypt"
 
 type User struct {
-	ID              int
-	Email           string
-	Password        string
-	Hashed_password string
-	FirstName       string
-	LastName        string
-	Age             int16
+	ID             int
+	Email          string
+	HashedPassword string
+	FirstName      string
+	LastName       string
+	Age            int16
 }
 
 type UserUpdate struct {
@@ -31,35 +19,22 @@ type UserUpdate struct {
 }
 
 func (u *User) Validate() error {
-	var errs []error
-	if u.Password == "" && u.Hashed_password == "" {
-		errs = append(errs, ErrEmptyPassword)
-	}
 	if u.Email == "" {
-		errs = append(errs, ErrEmptyEmail)
+		return ErrEmptyEmail
 	}
-	if !strings.ContainsRune(u.Email, '@') {
-		errs = append(errs, ErrNotValidEmail)
-	}
-	if len(errs) > 0 {
-		return ValidationErrors(errs)
+	if u.HashedPassword == "" {
+		return ErrEmptyPassword
 	}
 	return nil
 }
 
-func (u *User) BeforeCreate() error {
-	if u.Password != "" {
-		hash, err := hashString(u.Password)
-		if err != nil {
-			return err
-		}
-		u.Hashed_password = hash
+func (u *User) BeforeCreate(password string) error {
+	hash, err := hashString(password)
+	if err != nil {
+		return err
 	}
+	u.HashedPassword = hash
 	return nil
-}
-
-func (u *User) Sanitize() {
-	u.Password = ""
 }
 
 func hashString(s string) (string, error) {

@@ -16,7 +16,9 @@ func TestUser_Validate(t *testing.T) {
 		{
 			name: "valid",
 			u: func() *model.User {
-				return model.TestUser()
+				u := model.TestUser()
+				u.BeforeCreate("123")
+				return u
 			},
 			wantErr: nil,
 		},
@@ -24,6 +26,7 @@ func TestUser_Validate(t *testing.T) {
 			name: "empty email",
 			u: func() *model.User {
 				u := model.TestUser()
+				u.BeforeCreate("123")
 				u.Email = ""
 				return u
 			},
@@ -33,20 +36,9 @@ func TestUser_Validate(t *testing.T) {
 			name: "empty password",
 			u: func() *model.User {
 				u := model.TestUser()
-				u.Password = ""
 				return u
 			},
 			wantErr: model.ErrEmptyPassword,
-		},
-		{
-			name: "with hashed password",
-			u: func() *model.User {
-				u := model.TestUser()
-				u.Password = ""
-				u.Hashed_password = "hashed_password"
-				return u
-			},
-			wantErr: nil,
 		},
 	}
 	for _, tc := range testCases {
@@ -62,6 +54,6 @@ func TestUser_Validate(t *testing.T) {
 
 func TestUser_BeforeCreate(t *testing.T) {
 	u := model.TestUser()
-	assert.NoError(t, u.BeforeCreate())
-	assert.NotEmpty(t, u.Hashed_password)
+	assert.NoError(t, u.BeforeCreate("123"))
+	assert.NotEmpty(t, u.HashedPassword)
 }

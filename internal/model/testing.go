@@ -2,7 +2,6 @@ package model
 
 func TestUser() *User {
 	return &User{
-		Email:    "user@example.org",
-		Password: "123",
+		Email: "user@example.org",
 	}
 }

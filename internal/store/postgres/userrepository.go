@@ -18,7 +18,7 @@ func (r *UserRepository) Create(u *model.User) error {
 	err := r.db.QueryRow(
 		"INSERT INTO users(email, hashed_password) VALUES ($1, $2) RETURNING id",
 		u.Email,
-		u.Hashed_password,
+		u.HashedPassword,
 	).Scan(&u.ID)
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -55,7 +55,7 @@ func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
 	).Scan(
 		&u.ID,
 		&u.Email,
-		&u.Hashed_password,
+		&u.HashedPassword,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, store.ErrRecordNotFound
