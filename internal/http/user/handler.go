@@ -1,7 +1,7 @@
 package user
 
 import (
-	"http-rest-api/internal/service/user"
+	"admin-panel/internal/service/user"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"

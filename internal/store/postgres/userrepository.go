@@ -1,10 +1,10 @@
 package postgres
 
 import (
+	"admin-panel/internal/model"
+	"admin-panel/internal/store"
 	"database/sql"
 	"errors"
-	"http-rest-api/internal/model"
-	"http-rest-api/internal/store"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"

@@ -1,7 +1,7 @@
 package model_test
 
 import (
-	"http-rest-api/internal/model"
+	"admin-panel/internal/model"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

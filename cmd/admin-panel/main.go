@@ -1,12 +1,12 @@
 package main
 
 import (
-	"http-rest-api/internal/config"
-	"http-rest-api/internal/http/middleware"
-	userHTTP "http-rest-api/internal/http/user"
-	userService "http-rest-api/internal/service/user"
+	"admin-panel/internal/config"
+	"admin-panel/internal/http/middleware"
+	userHTTP "admin-panel/internal/http/user"
+	userService "admin-panel/internal/service/user"
 
-	"http-rest-api/internal/store/postgres"
+	"admin-panel/internal/store/postgres"
 	"log"
 	"net/http"
 

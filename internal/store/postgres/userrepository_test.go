@@ -1,9 +1,9 @@
 package postgres_test
 
 import (
-	"http-rest-api/internal/model"
-	"http-rest-api/internal/store"
-	"http-rest-api/internal/store/postgres"
+	"admin-panel/internal/model"
+	"admin-panel/internal/store"
+	"admin-panel/internal/store/postgres"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

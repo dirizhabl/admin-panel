@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"http-rest-api/internal/store"
+	"admin-panel/internal/store"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"

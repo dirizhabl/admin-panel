@@ -1,8 +1,8 @@
 package memory
 
 import (
-	"http-rest-api/internal/model"
-	"http-rest-api/internal/store"
+	"admin-panel/internal/model"
+	"admin-panel/internal/store"
 )
 
 type UserRepository struct {

@@ -1,11 +1,11 @@
 package user
 
 import (
+	req "admin-panel/internal/dto/request"
+	resp "admin-panel/internal/dto/response"
+	"admin-panel/internal/store"
 	"encoding/json"
 	"errors"
-	req "http-rest-api/internal/dto/request"
-	resp "http-rest-api/internal/dto/response"
-	"http-rest-api/internal/store"
 	"net/http"
 	"strconv"
 

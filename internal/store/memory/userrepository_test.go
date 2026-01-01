@@ -1,9 +1,9 @@
 package memory_test
 
 import (
-	"http-rest-api/internal/model"
-	"http-rest-api/internal/store"
-	"http-rest-api/internal/store/memory"
+	"admin-panel/internal/model"
+	"admin-panel/internal/store"
+	"admin-panel/internal/store/memory"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
