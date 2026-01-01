@@ -5,7 +5,6 @@ import (
 	"errors"
 	req "http-rest-api/internal/dto/request"
 	resp "http-rest-api/internal/dto/response"
-	"http-rest-api/internal/model"
 	"http-rest-api/internal/store"
 	"net/http"
 	"strconv"
@@ -79,26 +78,26 @@ func (h *Handler) JSON(statusCode int, w http.ResponseWriter, response any) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func (h *Handler) BindJson(w http.ResponseWriter, r *http.Request, in any) error {
+func (h *Handler) BindJson(w http.ResponseWriter, r *http.Request, body req.Body) error {
 	if r.Body == nil {
 		h.JSON(400, w, resp.Err{Err: "empty body"})
 	}
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
 
-	if err := dec.Decode(in); err != nil {
+	if err := dec.Decode(body); err != nil {
 		h.JSON(400, w, resp.Err{Err: err.Error()})
 		return err
+	}
+	if errs := body.Validate(); len(errs) > 0 {
+		h.JSON(422, w, resp.Errs{Errs: errs.Errors()})
+		return errs
 	}
 	return nil
 }
 
 func (h *Handler) Error(w http.ResponseWriter, err error) {
-	var errs model.ValidationErrors
-
 	switch {
-	case errors.As(err, &errs):
-		h.JSON(422, w, resp.Errs{Errs: errs.Errors()})
 	case errors.Is(err, store.ErrRecordExists):
 		h.JSON(409, w, resp.Err{Err: err.Error()})
 	case errors.Is(err, store.ErrRecordNotFound):

@@ -22,9 +22,9 @@ func (s *Service) CreateUser(req *req.CreateUser) (*resp.CreateUser, error) {
 		Email:    req.Email,
 		Password: req.Password,
 	}
-	if err := u.Validate(); err != nil {
-		return nil, err
-	}
+	// if err := u.Validate(); err != nil {
+	// 	return nil, err
+	// }
 	if err := u.BeforeCreate(); err != nil {
 		return nil, err
 	}
