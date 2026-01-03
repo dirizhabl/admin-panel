@@ -1,14 +1,14 @@
 package main
 
 import (
+	"log"
+	"net/http"
+
 	"admin-panel/internal/config"
 	"admin-panel/internal/http/middleware"
 	userHTTP "admin-panel/internal/http/user"
 	userService "admin-panel/internal/service/user"
-
 	"admin-panel/internal/store/postgres"
-	"log"
-	"net/http"
 
 	"github.com/gorilla/mux"
 	_ "github.com/jackc/pgx/v5/stdlib"

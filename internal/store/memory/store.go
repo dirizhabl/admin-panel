@@ -12,7 +12,7 @@ type Store struct {
 func New() *Store {
 	return &Store{
 		user: &UserRepository{
-			users: make(map[string]*model.User),
+			users: make([]*model.User, 0),
 		},
 	}
 }

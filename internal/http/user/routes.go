@@ -1,13 +1,14 @@
 package user
 
 import (
-	req "admin-panel/internal/dto/request"
-	resp "admin-panel/internal/dto/response"
-	"admin-panel/internal/store"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
+
+	req "admin-panel/internal/dto/request"
+	resp "admin-panel/internal/dto/response"
+	"admin-panel/internal/store"
 
 	"github.com/gorilla/mux"
 	// "github.com/sirupsen/logrus"

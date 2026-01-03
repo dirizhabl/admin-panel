@@ -1,33 +1,34 @@
 package memory_test
 
 import (
-	"admin-panel/internal/model"
-	"admin-panel/internal/store"
-	"admin-panel/internal/store/memory"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"admin-panel/internal/store"
+	"admin-panel/internal/store/memory"
 )
 
-func TestUserRepository_Create(t *testing.T) {
-	s := memory.New()
-	u := model.TestUser()
-	assert.NoError(t, s.User().Create(u))
-	assert.NotNil(t, u)
-}
+func TestUserRepositoryMemory(t *testing.T) {
+	t.Run("Create", func(t *testing.T) {
+		store.UserRepositoryCreate(t, func() (store.Store, func()) {
+			return memory.New(), func() {}
+		})
+	})
 
-func TestUserRepository_FindByEmail(t *testing.T) {
-	s := memory.New()
-	email := "user@example.org"
+	t.Run("FindById", func(t *testing.T) {
+		store.UserRepositoryFindById(t, func() (store.Store, func()) {
+			return memory.New(), func() {}
+		})
+	})
 
-	_, err := s.User().FindByEmail(email)
-	assert.ErrorIs(t, err, store.ErrRecordNotFound)
+	t.Run("FindByEmail", func(t *testing.T) {
+		store.UserRepositoryFindByEmail(t, func() (store.Store, func()) {
+			return memory.New(), func() {}
+		})
+	})
 
-	u := model.TestUser()
-	u.Email = email
-	s.User().Create(u)
-
-	u, err = s.User().FindByEmail(email)
-	assert.NoError(t, err)
-	assert.NotNil(t, u)
+	t.Run("Update", func(t *testing.T) {
+		store.UserRepositoryUpdate(t, func() (store.Store, func()) {
+			return memory.New(), func() {}
+		})
+	})
 }

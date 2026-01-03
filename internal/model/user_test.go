@@ -1,8 +1,9 @@
 package model_test
 
 import (
-	"admin-panel/internal/model"
 	"testing"
+
+	"admin-panel/internal/model"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +21,6 @@ func TestUser_Validate(t *testing.T) {
 				u.BeforeCreate("123")
 				return u
 			},
-			wantErr: nil,
 		},
 		{
 			name: "empty email",

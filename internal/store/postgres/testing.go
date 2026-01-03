@@ -26,6 +26,5 @@ func TestDB(t *testing.T, databaseURL string) (*sqlx.DB, func(...string)) {
 				t.Fatal(err)
 			}
 		}
-		db.Close()
 	}
 }
