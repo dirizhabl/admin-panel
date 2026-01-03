@@ -20,21 +20,21 @@ func UserRepositoryCreate(
 	t.Helper()
 	testCases := []struct {
 		name    string
-		prepare func(UserRepository) *model.User
+		prepare func(Store) *model.User
 		wantErr error
 	}{
 		{
 			name: "user already exists",
-			prepare: func(userRepo UserRepository) *model.User {
+			prepare: func(s Store) *model.User {
 				u := model.TestUser()
-				userRepo.Create(u)
+				s.User().Create(u)
 				return u
 			},
 			wantErr: ErrRecordExists,
 		},
 		{
-			name: "successful create",
-			prepare: func(userRepo UserRepository) *model.User {
+			name: "ok",
+			prepare: func(s Store) *model.User {
 				return model.TestUser()
 			},
 		},
@@ -43,12 +43,10 @@ func UserRepositoryCreate(
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			store, teardown := newStore()
-			defer teardown()	
+			defer teardown()
 
-			userRepo := store.User()
-
-			user := tc.prepare(userRepo)
-			err := userRepo.Create(user)
+			user := tc.prepare(store)
+			err := store.User().Create(user)
 
 			if tc.wantErr != nil {
 				assert.ErrorIs(t, err, tc.wantErr)
@@ -66,23 +64,23 @@ func UserRepositoryFindById(
 	t.Helper()
 	testCases := []struct {
 		name    string
-		prepare func(UserRepository) int
+		prepare func(Store) int
 		wantErr error
 	}{
 		{
-			name: "user exists",
-			prepare: func(userRepo UserRepository) int {
-				u := model.TestUser()
-				userRepo.Create(u)
-				return u.ID
-			},
-		},
-		{
 			name: "user not found",
-			prepare: func(userRepo UserRepository) int {
+			prepare: func(s Store) int {
 				return math.MaxInt64
 			},
 			wantErr: ErrRecordNotFound,
+		},
+		{
+			name: "ok",
+			prepare: func(s Store) int {
+				u := model.TestUser()
+				s.User().Create(u)
+				return u.ID
+			},
 		},
 	}
 
@@ -91,10 +89,8 @@ func UserRepositoryFindById(
 			store, teardown := newStore()
 			defer teardown()
 
-			userRepo := store.User()
-
-			id := tc.prepare(userRepo)
-			user, err := userRepo.FindById(id)
+			id := tc.prepare(store)
+			user, err := store.User().FindById(id)
 
 			if tc.wantErr != nil {
 				assert.ErrorIs(t, err, tc.wantErr)
@@ -114,23 +110,23 @@ func UserRepositoryFindByEmail(
 	t.Helper()
 	testCases := []struct {
 		name    string
-		prepare func(UserRepository) string
+		prepare func(Store) string
 		wantErr error
 	}{
 		{
-			name: "user exists",
-			prepare: func(userRepo UserRepository) string {
-				u := model.TestUser()
-				userRepo.Create(u)
-				return u.Email
-			},
-		},
-		{
 			name: "user not found",
-			prepare: func(userRepo UserRepository) string {
+			prepare: func(s Store) string {
 				return "nil@nil.org"
 			},
 			wantErr: ErrRecordNotFound,
+		},
+		{
+			name: "ok",
+			prepare: func(s Store) string {
+				u := model.TestUser()
+				s.User().Create(u)
+				return u.Email
+			},
 		},
 	}
 
@@ -139,10 +135,8 @@ func UserRepositoryFindByEmail(
 			store, teardown := newStore()
 			defer teardown()
 
-			userRepo := store.User()
-
-			email := tc.prepare(userRepo)
-			user, err := userRepo.FindByEmail(email)
+			email := tc.prepare(store)
+			user, err := store.User().FindByEmail(email)
 
 			if tc.wantErr != nil {
 				assert.ErrorIs(t, err, tc.wantErr)
@@ -162,47 +156,63 @@ func UserRepositoryUpdate(
 	t.Helper()
 	testCases := []struct {
 		name    string
-		prepare func(UserRepository) *model.UserUpdate
+		prepare func(Store) *model.UserUpdate
 		wantErr error
 	}{
 		{
 			name: "user not found",
-			prepare: func(userRepo UserRepository) *model.UserUpdate {
+			prepare: func(s Store) *model.UserUpdate {
 				id := math.MaxInt64
-				return model.TestUserUpdate(id)
+				return &model.UserUpdate{
+					ID: id,
+				}
 			},
 			wantErr: ErrRecordNotFound,
 		},
 		{
-			name: "successful update",
-			prepare: func(userRepo UserRepository) *model.UserUpdate {
+			name: "ok",
+			prepare: func(s Store) *model.UserUpdate {
 				u := model.TestUser()
-				userRepo.Create(u)
-				dto := model.TestUserUpdate(u.ID)
-				dto.FirstName = toPtr("john")
-				dto.LastName = toPtr("doe")
-				dto.Age = toPtr(int16(18))
-				return dto
+				s.User().Create(u)
+				return &model.UserUpdate{
+					ID: u.ID,
+					FirstName: toPtr("john"),
+					LastName : toPtr("doe"),
+					Age : toPtr(int16(18)),
+				}
 			},
 		},
 		{
-			name: "only first_name",
-			prepare: func(userRepo UserRepository) *model.UserUpdate {
+			name: "ok/only first_name",
+			prepare: func(s Store) *model.UserUpdate {
 				u := model.TestUser()
-				userRepo.Create(u)
-				dto := model.TestUserUpdate(u.ID)
-				dto.FirstName = toPtr("john")
-				return dto
+				s.User().Create(u)
+				return &model.UserUpdate{
+					ID: u.ID,
+					FirstName: toPtr("john"),
+				}
 			},
 		},
 		{
-			name: "only last_name",
-			prepare: func(userRepo UserRepository) *model.UserUpdate {
+			name: "ok/only last_name",
+			prepare: func(s Store) *model.UserUpdate {
 				u := model.TestUser()
-				userRepo.Create(u)
-				dto := model.TestUserUpdate(u.ID)
-				dto.LastName = toPtr("doe")
-				return dto
+				s.User().Create(u)
+				return &model.UserUpdate{
+					ID: u.ID,
+					LastName: toPtr("doe"),
+				}
+			},
+		},
+		{
+			name: "ok/only age",
+			prepare: func(s Store) *model.UserUpdate {
+				u := model.TestUser()
+				s.User().Create(u)
+				return &model.UserUpdate{
+					ID: u.ID,
+					Age: toPtr(int16(18)),
+				}
 			},
 		},
 	}
@@ -212,10 +222,8 @@ func UserRepositoryUpdate(
 			store, teardown := newStore()
 			defer teardown()
 
-			userRepo := store.User()
-
-			dto := tc.prepare(userRepo)
-			user, err := userRepo.Update(dto)
+			dto := tc.prepare(store)
+			user, err := store.User().Update(dto)
 
 			if tc.wantErr != nil {
 				assert.ErrorIs(t, err, tc.wantErr)

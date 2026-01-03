@@ -1,7 +1,5 @@
 package model
 
-import "golang.org/x/crypto/bcrypt"
-
 type User struct {
 	ID             int
 	Email          string
@@ -11,24 +9,17 @@ type User struct {
 	Age            int16
 }
 
-type UserUpdate struct {
-	ID        int
-	FirstName *string
-	LastName  *string
-	Age       *int16
-}
-
 func (u *User) Validate() error {
 	if u.Email == "" {
 		return ErrEmptyEmail
-	}
-	if u.HashedPassword == "" {
-		return ErrEmptyPassword
 	}
 	return nil
 }
 
 func (u *User) BeforeCreate(password string) error {
+	if password == "" {
+		return ErrEmptyPassword
+	}
 	hash, err := hashString(password)
 	if err != nil {
 		return err
@@ -37,10 +28,16 @@ func (u *User) BeforeCreate(password string) error {
 	return nil
 }
 
-func hashString(s string) (string, error) {
-	b, err := bcrypt.GenerateFromPassword([]byte(s), bcrypt.MinCost)
-	if err != nil {
-		return "", err
+type UserUpdate struct {
+	ID        int
+	FirstName *string
+	LastName  *string
+	Age       *int16
+}
+
+func (u *UserUpdate) Validate() error {
+	if u.FirstName == nil && u.LastName == nil && u.Age == nil {
+		return ErrEmptyFieldsUpdate
 	}
-	return string(b), nil
+	return nil
 }

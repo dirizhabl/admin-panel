@@ -32,14 +32,6 @@ func TestUser_Validate(t *testing.T) {
 			},
 			wantErr: model.ErrEmptyEmail,
 		},
-		{
-			name: "empty password",
-			u: func() *model.User {
-				u := model.TestUser()
-				return u
-			},
-			wantErr: model.ErrEmptyPassword,
-		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -56,4 +48,7 @@ func TestUser_BeforeCreate(t *testing.T) {
 	u := model.TestUser()
 	assert.NoError(t, u.BeforeCreate("123"))
 	assert.NotEmpty(t, u.HashedPassword)
+
+	u = model.TestUser()
+	assert.ErrorIs(t, u.BeforeCreate(""), model.ErrEmptyPassword)
 }

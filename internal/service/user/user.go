@@ -43,12 +43,24 @@ func (s *Service) FindUserById(id int) (*resp.GetUser, error) {
 	return &resp.GetUser{ID: u.ID}, nil
 }
 
+func (s *Service) FindUserByEmail(email string) (*resp.GetUser, error) {
+	u, err := s.store.User().FindByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp.GetUser{ID: u.ID}, nil
+}
+
 func (s *Service) UpdateUser(id int, req *req.UserUpdate) (*resp.GetUser, error) {
 	dto := &model.UserUpdate{
 		ID:        id,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Age:       req.Age,
+	}
+	if err := dto.Validate(); err != nil {
+		return nil, err
 	}
 	u, err := s.store.User().Update(dto)
 	if err != nil {
