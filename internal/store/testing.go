@@ -175,10 +175,10 @@ func UserRepositoryUpdate(
 				u := model.TestUser()
 				s.User().Create(u)
 				return &model.UserUpdate{
-					ID: u.ID,
+					ID:        u.ID,
 					FirstName: toPtr("john"),
-					LastName : toPtr("doe"),
-					Age : toPtr(int16(18)),
+					LastName:  toPtr("doe"),
+					Age:       toPtr(int16(18)),
 				}
 			},
 		},
@@ -188,7 +188,7 @@ func UserRepositoryUpdate(
 				u := model.TestUser()
 				s.User().Create(u)
 				return &model.UserUpdate{
-					ID: u.ID,
+					ID:        u.ID,
 					FirstName: toPtr("john"),
 				}
 			},
@@ -199,7 +199,7 @@ func UserRepositoryUpdate(
 				u := model.TestUser()
 				s.User().Create(u)
 				return &model.UserUpdate{
-					ID: u.ID,
+					ID:       u.ID,
 					LastName: toPtr("doe"),
 				}
 			},
@@ -210,7 +210,7 @@ func UserRepositoryUpdate(
 				u := model.TestUser()
 				s.User().Create(u)
 				return &model.UserUpdate{
-					ID: u.ID,
+					ID:  u.ID,
 					Age: toPtr(int16(18)),
 				}
 			},
