@@ -30,5 +30,9 @@ type UserUpdate struct {
 }
 
 func (u *UserUpdate) Validate() ValidationErrors {
-	return nil
+	var errs ValidationErrors
+	if u.FirstName == nil && u.LastName == nil && u.Age == nil {
+		errs = append(errs, ErrEmptyFieldsUpdate)
+	}
+	return errs
 }

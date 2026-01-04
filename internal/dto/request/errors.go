@@ -6,9 +6,10 @@ import (
 )
 
 var (
-	ErrWeakPassword  = errors.New("length of password must be more 6")
-	ErrEmptyEmail    = errors.New("length of email must be more 0")
-	ErrNotValidEmail = errors.New("email is not valid")
+	ErrWeakPassword      = errors.New("length of password must be more 6")
+	ErrEmptyEmail        = errors.New("length of email must be more 0")
+	ErrNotValidEmail     = errors.New("email is not valid")
+	ErrEmptyFieldsUpdate = errors.New("no fields to update")
 )
 
 type ValidationErrors []error

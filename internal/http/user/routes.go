@@ -34,7 +34,7 @@ func (h *Handler) FindUserByEmail() http.HandlerFunc {
 		c := NewHandlerContext(w, r)
 		values := r.URL.Query()
 		email := values.Get("email")
-		
+
 		user, err := h.service.FindUserByEmail(email)
 		if err != nil {
 			c.Error(err)
