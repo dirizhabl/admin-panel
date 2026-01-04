@@ -29,7 +29,22 @@ func (h *Handler) CreateUser() http.HandlerFunc {
 	}
 }
 
-func (h *Handler) FindUser() http.HandlerFunc {
+func (h *Handler) FindUserByEmail() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		c := NewHandlerContext(w, r)
+		values := r.URL.Query()
+		email := values.Get("email")
+		
+		user, err := h.service.FindUserByEmail(email)
+		if err != nil {
+			c.Error(err)
+			return
+		}
+		c.JSON(200, user)
+	}
+}
+
+func (h *Handler) FindUserById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		c := NewHandlerContext(w, r)
 		pathVars := mux.Vars(r)
