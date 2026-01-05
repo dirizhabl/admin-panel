@@ -1,13 +1,11 @@
-package user
+package admin
 
 import (
 	"errors"
 	"net/http"
 	"strconv"
 
-	req "admin-panel/internal/transport/http/admin-panel/request"
-	resp "admin-panel/internal/transport/http/admin-panel/response"
-	"admin-panel/internal/user/service/command"
+	"admin-panel/internal/user/service"
 
 	"github.com/gorilla/mux"
 )
@@ -16,12 +14,12 @@ func (h *Handler) CreateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		c := NewHandlerContext(w, r)
 
-		req := &req.UserCreate{}
+		req := &UserCreateRequest{}
 		if err := c.BindJson(req); err != nil {
 			return
 		}
 
-		in := &command.UserCreate{
+		in := &service.UserCreateIn{
 			Email:    req.Email,
 			Password: req.Password,
 		}
@@ -32,7 +30,7 @@ func (h *Handler) CreateUser() http.HandlerFunc {
 			return
 		}
 
-		response := &resp.UserCreate{
+		response := &UserCreateResponse{
 			ID: u.ID,
 		}
 		c.JSON(201, response)
@@ -51,7 +49,7 @@ func (h *Handler) FindUserByEmail() http.HandlerFunc {
 			return
 		}
 
-		response := &resp.UserRead{
+		response := &UserReadResponse{
 			ID:        u.ID,
 			Email:     u.Email,
 			FirstName: u.FirstName,
@@ -80,7 +78,7 @@ func (h *Handler) FindUserById() http.HandlerFunc {
 			return
 		}
 
-		response := &resp.UserRead{
+		response := &UserReadResponse{
 			ID:        u.ID,
 			Email:     u.Email,
 			FirstName: u.FirstName,
@@ -102,12 +100,12 @@ func (h *Handler) UpdateUser() http.HandlerFunc {
 			return
 		}
 
-		req := &req.UserUpdate{}
+		req := &UserUpdateRequest{}
 		if err := c.BindJson(req); err != nil {
 			return
 		}
 
-		in := &command.UserUpdate{
+		in := &service.UserUpdateIn{
 			ID:        id,
 			FirstName: req.FirstName,
 			LastName:  req.LastName,
@@ -120,7 +118,7 @@ func (h *Handler) UpdateUser() http.HandlerFunc {
 			return
 		}
 
-		response := &resp.UserRead{
+		response := &UserReadResponse{
 			ID:        u.ID,
 			Email:     u.Email,
 			FirstName: u.FirstName,

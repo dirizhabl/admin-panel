@@ -1,6 +1,6 @@
-package command
+package service
 
-type UserUpdate struct {
+type UserUpdateIn struct {
 	ID        int
 	FirstName *string
 	LastName  *string

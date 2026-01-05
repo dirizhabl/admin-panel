@@ -1,4 +1,4 @@
-package request
+package admin
 
 import "regexp"
 

@@ -17,10 +17,10 @@ type UserRepository struct {
 
 func (r *UserRepository) Create(u *domain.User) error {
 	err := r.db.QueryRow(
-		"INSERT INTO users(email, hashed_password) VALUES ($1, $2) RETURNING id",
+		"INSERT INTO users(email, hashed_password) VALUES ($1, $2) RETURNING id, email",
 		u.Email,
 		u.HashedPassword,
-	).Scan(&u.ID)
+	).Scan(&u.ID, &u.Email)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
@@ -32,38 +32,33 @@ func (r *UserRepository) Create(u *domain.User) error {
 }
 
 func (r *UserRepository) FindById(id int) (*domain.User, error) {
-	u := &domain.User{}
+	var row userRow
 	if err := r.db.QueryRow(
-		"SELECT id, email FROM users WHERE id = $1",
-		id,
+		"SELECT id, email, first_name, last_name, age FROM users WHERE id = $1", id,
 	).Scan(
-		&u.ID,
-		&u.Email,
+		&row.ID, &row.Email, &row.FirstName, &row.LastName, &row.Age,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, store.ErrRecordNotFound
 		}
 		return nil, err
 	}
-	return u, nil
+	return row.toUser(), nil
 }
 
 func (r *UserRepository) FindByEmail(email string) (*domain.User, error) {
-	u := &domain.User{}
+	var row userRow
 	if err := r.db.QueryRow(
-		"SELECT id, email, hashed_password FROM users WHERE email = $1",
-		email,
+		"SELECT id, email, first_name, last_name, age FROM users WHERE email = $1", email,
 	).Scan(
-		&u.ID,
-		&u.Email,
-		&u.HashedPassword,
+		&row.ID, &row.Email, &row.FirstName, &row.LastName, &row.Age,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, store.ErrRecordNotFound
 		}
 		return nil, err
 	}
-	return u, nil
+	return row.toUser(), nil
 }
 
 func (r *UserRepository) Update(dto *domain.UserUpdate) (*domain.User, error) {
@@ -73,7 +68,7 @@ func (r *UserRepository) Update(dto *domain.UserUpdate) (*domain.User, error) {
 		dto.Age != nil, dto.Age,
 		dto.ID,
 	}
-	var userRow userRow
+	var row userRow
 	const query = `
 		UPDATE users
         SET
@@ -84,7 +79,7 @@ func (r *UserRepository) Update(dto *domain.UserUpdate) (*domain.User, error) {
         RETURNING id, email, first_name, last_name, age;
 	`
 	if err := r.db.QueryRow(query, args...).Scan(
-		&userRow.ID, &userRow.Email, &userRow.FirstName, &userRow.LastName, &userRow.Age,
+		&row.ID, &row.Email, &row.FirstName, &row.LastName, &row.Age,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, store.ErrRecordNotFound
@@ -92,22 +87,5 @@ func (r *UserRepository) Update(dto *domain.UserUpdate) (*domain.User, error) {
 		return nil, err
 	}
 
-	user := &domain.User{
-		ID:    userRow.ID,
-		Email: userRow.Email,
-	}
-
-	if userRow.FirstName != nil {
-		user.FirstName = *userRow.FirstName
-	}
-
-	if userRow.LastName != nil {
-		user.LastName = *userRow.LastName
-	}
-
-	if userRow.Age != nil {
-		user.Age = *userRow.Age
-	}
-
-	return user, nil
+	return row.toUser(), nil
 }

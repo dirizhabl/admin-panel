@@ -2,8 +2,6 @@ package service
 
 import (
 	"admin-panel/internal/user/domain"
-	"admin-panel/internal/user/service/command"
-	"admin-panel/internal/user/service/out"
 	"admin-panel/internal/user/store"
 )
 
@@ -17,40 +15,40 @@ func New(store store.Store) *Service {
 	}
 }
 
-func (s *Service) CreateUser(in *command.UserCreate) (out.UserCreate, error) {
+func (s *Service) CreateUser(in *UserCreateIn) (UserCreateOut, error) {
 	if err := in.Validate(); err != nil {
-		return out.UserCreate{}, err
+		return UserCreateOut{}, err
 	}
 	u, err := domain.NewUser(in.Email, in.Password)
 	if err != nil {
-		return out.UserCreate{}, err
+		return UserCreateOut{}, err
 	}
 	if err := s.store.User().Create(u); err != nil {
-		return out.UserCreate{}, err
+		return UserCreateOut{}, err
 	}
 
-	return out.UserCreate{ID: u.ID}, nil
+	return UserCreateOut{ID: u.ID}, nil
 }
 
-func (s *Service) FindUserById(id int) (out.UserRead, error) {
+func (s *Service) FindUserById(id int) (UserReadOut, error) {
 	u, err := s.store.User().FindById(id)
 	if err != nil {
-		return out.UserRead{}, err
+		return UserReadOut{}, err
 	}
 
-	return out.UserRead{ID: u.ID}, nil
+	return toUserReadOut(u), nil
 }
 
-func (s *Service) FindUserByEmail(email string) (out.UserRead, error) {
+func (s *Service) FindUserByEmail(email string) (UserReadOut, error) {
 	u, err := s.store.User().FindByEmail(email)
 	if err != nil {
-		return out.UserRead{}, err
+		return UserReadOut{}, err
 	}
 
-	return out.UserRead{ID: u.ID}, nil
+	return toUserReadOut(u), nil
 }
 
-func (s *Service) UpdateUser(in *command.UserUpdate) (out.UserRead, error) {
+func (s *Service) UpdateUser(in *UserUpdateIn) (UserReadOut, error) {
 	dto := &domain.UserUpdate{
 		ID:        in.ID,
 		FirstName: in.FirstName,
@@ -58,18 +56,12 @@ func (s *Service) UpdateUser(in *command.UserUpdate) (out.UserRead, error) {
 		Age:       in.Age,
 	}
 	if err := dto.Validate(); err != nil {
-		return out.UserRead{}, err
+		return UserReadOut{}, err
 	}
 	u, err := s.store.User().Update(dto)
 	if err != nil {
-		return out.UserRead{}, err
+		return UserReadOut{}, err
 	}
 
-	return out.UserRead{
-		ID:        u.ID,
-		Email:     u.Email,
-		FirstName: u.FirstName,
-		LastName:  u.LastName,
-		Age:       u.Age,
-	}, nil
+	return toUserReadOut(u), nil
 }

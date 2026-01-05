@@ -6,7 +6,6 @@ import (
 
 	"admin-panel/internal/user/domain"
 	"admin-panel/internal/user/service"
-	"admin-panel/internal/user/service/command"
 	"admin-panel/internal/user/store"
 	"admin-panel/internal/user/store/memory"
 
@@ -37,38 +36,38 @@ func CreateUser(
 ) {
 	testCases := []struct {
 		name       string
-		prepareDTO func(store.Store) *command.UserCreate
+		prepareDTO func(store.Store) *service.UserCreateIn
 		wantErr    error
 	}{
 		{
 			name: "empty email",
-			prepareDTO: func(s store.Store) *command.UserCreate {
-				return &command.UserCreate{
+			prepareDTO: func(s store.Store) *service.UserCreateIn {
+				return &service.UserCreateIn{
 					Password: "123",
 				}
 			},
-			wantErr: command.ErrInvalidInput,
+			wantErr: service.ErrInvalidInput,
 		},
 		{
 			name: "empty password",
-			prepareDTO: func(s store.Store) *command.UserCreate {
-				return &command.UserCreate{
+			prepareDTO: func(s store.Store) *service.UserCreateIn {
+				return &service.UserCreateIn{
 					Email: "nil@nil.org",
 				}
 			},
-			wantErr: command.ErrInvalidInput,
+			wantErr: service.ErrInvalidInput,
 		},
 		{
 			name: "empty password and email",
-			prepareDTO: func(s store.Store) *command.UserCreate {
-				return &command.UserCreate{}
+			prepareDTO: func(s store.Store) *service.UserCreateIn {
+				return &service.UserCreateIn{}
 			},
-			wantErr: command.ErrInvalidInput,
+			wantErr: service.ErrInvalidInput,
 		},
 		{
 			name: "weak password",
-			prepareDTO: func(s store.Store) *command.UserCreate {
-				return &command.UserCreate{
+			prepareDTO: func(s store.Store) *service.UserCreateIn {
+				return &service.UserCreateIn{
 					Email:    "nil@nil.org",
 					Password: "123",
 				}
@@ -77,11 +76,11 @@ func CreateUser(
 		},
 		{
 			name: "user already exists",
-			prepareDTO: func(s store.Store) *command.UserCreate {
+			prepareDTO: func(s store.Store) *service.UserCreateIn {
 				u := domain.TestUser()
 				s.User().Create(u)
 
-				return &command.UserCreate{
+				return &service.UserCreateIn{
 					Email:    u.Email,
 					Password: "1231231",
 				}
@@ -90,8 +89,8 @@ func CreateUser(
 		},
 		{
 			name: "ok",
-			prepareDTO: func(s store.Store) *command.UserCreate {
-				return &command.UserCreate{
+			prepareDTO: func(s store.Store) *service.UserCreateIn {
+				return &service.UserCreateIn{
 					Email:    "nil@nil.org",
 					Password: "1231231",
 				}
@@ -217,14 +216,14 @@ func UpdateUser(
 	t.Helper()
 	testCases := []struct {
 		name    string
-		prepare func(store.Store) *command.UserUpdate
+		prepare func(store.Store) *service.UserUpdateIn
 		wantErr error
 	}{
 		{
 			name: "user not found",
-			prepare: func(s store.Store) *command.UserUpdate {
+			prepare: func(s store.Store) *service.UserUpdateIn {
 				id := math.MaxInt64
-				return &command.UserUpdate{
+				return &service.UserUpdateIn{
 					ID:        id,
 					FirstName: toPtr("john"),
 					LastName:  toPtr("doe"),
@@ -235,19 +234,19 @@ func UpdateUser(
 		},
 		{
 			name: "no data",
-			prepare: func(s store.Store) *command.UserUpdate {
+			prepare: func(s store.Store) *service.UserUpdateIn {
 				u := domain.TestUser()
 				s.User().Create(u)
-				return &command.UserUpdate{}
+				return &service.UserUpdateIn{}
 			},
 			wantErr: domain.ErrEmptyFieldsUpdate,
 		},
 		{
 			name: "ok",
-			prepare: func(s store.Store) *command.UserUpdate {
+			prepare: func(s store.Store) *service.UserUpdateIn {
 				u := domain.TestUser()
 				s.User().Create(u)
-				return &command.UserUpdate{
+				return &service.UserUpdateIn{
 					ID:        u.ID,
 					FirstName: toPtr("john"),
 					LastName:  toPtr("doe"),
@@ -257,10 +256,10 @@ func UpdateUser(
 		},
 		{
 			name: "ok/only first_name",
-			prepare: func(s store.Store) *command.UserUpdate {
+			prepare: func(s store.Store) *service.UserUpdateIn {
 				u := domain.TestUser()
 				s.User().Create(u)
-				return &command.UserUpdate{
+				return &service.UserUpdateIn{
 					ID:        u.ID,
 					FirstName: toPtr("john"),
 				}
@@ -268,10 +267,10 @@ func UpdateUser(
 		},
 		{
 			name: "ok/only last_name",
-			prepare: func(s store.Store) *command.UserUpdate {
+			prepare: func(s store.Store) *service.UserUpdateIn {
 				u := domain.TestUser()
 				s.User().Create(u)
-				return &command.UserUpdate{
+				return &service.UserUpdateIn{
 					ID:       u.ID,
 					LastName: toPtr("doe"),
 				}
@@ -279,10 +278,10 @@ func UpdateUser(
 		},
 		{
 			name: "ok/only age",
-			prepare: func(s store.Store) *command.UserUpdate {
+			prepare: func(s store.Store) *service.UserUpdateIn {
 				u := domain.TestUser()
 				s.User().Create(u)
-				return &command.UserUpdate{
+				return &service.UserUpdateIn{
 					ID:  u.ID,
 					Age: toPtr(int16(18)),
 				}

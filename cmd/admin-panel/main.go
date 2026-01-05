@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"admin-panel/internal/config"
-	adminHTTP "admin-panel/internal/transport/http/admin-panel"
+	adminHTTP "admin-panel/internal/transport/http/admin"
 	"admin-panel/internal/transport/http/middleware"
 	userService "admin-panel/internal/user/service"
 	"admin-panel/internal/user/store/postgres"
