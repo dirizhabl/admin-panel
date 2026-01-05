@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	"admin-panel/internal/config"
-	"admin-panel/internal/http/middleware"
-	userHTTP "admin-panel/internal/http/user"
-	userService "admin-panel/internal/service/user"
-	"admin-panel/internal/store/postgres"
+	adminHTTP "admin-panel/internal/transport/http/admin-panel"
+	"admin-panel/internal/transport/http/middleware"
+	userService "admin-panel/internal/user/service"
+	"admin-panel/internal/user/store/postgres"
 
 	"github.com/gorilla/mux"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -36,7 +36,7 @@ func main() {
 	store := postgres.New(db)
 	userService := userService.New(store)
 
-	userHTTP.New(logger, router, userService)
+	adminHTTP.New(logger, router, userService)
 
 	server := http.Server{
 		Addr:    config.HTTPServer.BindAddr,

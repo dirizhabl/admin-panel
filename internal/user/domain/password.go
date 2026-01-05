@@ -1,0 +1,11 @@
+package domain
+
+import "golang.org/x/crypto/bcrypt"
+
+func hashString(s string) (string, error) {
+	b, err := bcrypt.GenerateFromPassword([]byte(s), bcrypt.MinCost)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
