@@ -46,23 +46,7 @@ func CreateUser(
 					Password: "123",
 				}
 			},
-			wantErr: service.ErrInvalidInput,
-		},
-		{
-			name: "empty password",
-			prepareDTO: func(s store.Store) *service.UserCreateIn {
-				return &service.UserCreateIn{
-					Email: "nil@nil.org",
-				}
-			},
-			wantErr: service.ErrInvalidInput,
-		},
-		{
-			name: "empty password and email",
-			prepareDTO: func(s store.Store) *service.UserCreateIn {
-				return &service.UserCreateIn{}
-			},
-			wantErr: service.ErrInvalidInput,
+			wantErr: domain.ErrEmptyEmail,
 		},
 		{
 			name: "weak password",

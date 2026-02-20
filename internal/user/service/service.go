@@ -16,9 +16,6 @@ func New(store store.Store) *Service {
 }
 
 func (s *Service) CreateUser(in *UserCreateIn) (UserCreateOut, error) {
-	if err := in.Validate(); err != nil {
-		return UserCreateOut{}, err
-	}
 	u, err := domain.NewUser(in.Email, in.Password)
 	if err != nil {
 		return UserCreateOut{}, err

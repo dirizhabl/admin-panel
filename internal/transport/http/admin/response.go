@@ -1,5 +1,7 @@
 package admin
 
+import "admin-panel/internal/user/service"
+
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
@@ -30,4 +32,14 @@ type UserReadResponse struct {
 	FirstName string `json:"first_name,omitempty"`
 	LastName  string `json:"last_name,omitempty"`
 	Age       int16  `json:"age,omitempty"`
+}
+
+func toUserReadResponse(u *service.UserReadOut) UserReadResponse {
+	return UserReadResponse{
+		ID:        u.ID,
+		Email:     u.Email,
+		FirstName: u.FirstName,
+		LastName:  u.LastName,
+		Age:       u.Age,
+	}
 }

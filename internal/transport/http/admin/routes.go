@@ -49,14 +49,7 @@ func (h *Handler) FindUserByEmail() http.HandlerFunc {
 			return
 		}
 
-		response := &UserReadResponse{
-			ID:        u.ID,
-			Email:     u.Email,
-			FirstName: u.FirstName,
-			LastName:  u.LastName,
-			Age:       u.Age,
-		}
-		c.JSON(200, response)
+		c.JSON(200, toUserReadResponse(&u))
 	}
 }
 
@@ -78,14 +71,7 @@ func (h *Handler) FindUserById() http.HandlerFunc {
 			return
 		}
 
-		response := &UserReadResponse{
-			ID:        u.ID,
-			Email:     u.Email,
-			FirstName: u.FirstName,
-			LastName:  u.LastName,
-			Age:       u.Age,
-		}
-		c.JSON(200, response)
+		c.JSON(200, toUserReadResponse(&u))
 	}
 }
 
@@ -118,13 +104,6 @@ func (h *Handler) UpdateUser() http.HandlerFunc {
 			return
 		}
 
-		response := &UserReadResponse{
-			ID:        u.ID,
-			Email:     u.Email,
-			FirstName: u.FirstName,
-			LastName:  u.LastName,
-			Age:       u.Age,
-		}
-		c.JSON(200, response)
+		c.JSON(200, toUserReadResponse(&u))
 	}
 }
