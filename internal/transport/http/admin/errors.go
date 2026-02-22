@@ -10,6 +10,9 @@ var (
 	ErrEmptyEmail        = errors.New("length of email must be more 0")
 	ErrNotValidEmail     = errors.New("email is not valid")
 	ErrEmptyFieldsUpdate = errors.New("no fields to update")
+	ErrEmptyFilters      = errors.New("filters not set")
+	ErrMinAge            = errors.New("min age must be more 0")
+	ErrMaxAge            = errors.New("max age must be less 255")
 )
 
 type ValidationErrors []error

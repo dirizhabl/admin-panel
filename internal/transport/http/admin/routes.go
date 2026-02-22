@@ -5,10 +5,14 @@ import (
 	"net/http"
 	"strconv"
 
+	"admin-panel/internal/user"
 	"admin-panel/internal/user/service"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 )
+
+var decoder = schema.NewDecoder()
 
 func (h *Handler) CreateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -37,19 +41,43 @@ func (h *Handler) CreateUser() http.HandlerFunc {
 	}
 }
 
-func (h *Handler) FindUserByEmail() http.HandlerFunc {
+
+func (h *Handler) FindUsersByParams() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		c := NewHandlerContext(w, r)
-		values := r.URL.Query()
-		email := values.Get("email")
 
-		u, err := h.service.FindUserByEmail(email)
+		var query UserFiltersQuery
+
+		if err := decoder.Decode(&query, r.URL.Query()); err != nil {
+			c.Error(err)
+			return
+		}
+
+		if err := query.Validate(); err != nil {
+			c.Error(err)
+			return
+		}
+
+		f := &user.Filters{
+			Email:     query.Email,
+			FirstName: query.FirstName,
+			LastName:  query.LastName,
+			MinAge:    query.MinAge,
+			MaxAge:    query.MaxAge,
+		}
+
+		users, err := h.service.FindUsersByFilters(f)
 		if err != nil {
 			c.Error(err)
 			return
 		}
 
-		c.JSON(200, toUserReadResponse(&u))
+		usersResponse := make([]UserReadResponse, len(users))
+		for i, u := range users {
+			usersResponse[i] = toUserReadResponse(&u)
+		}
+
+		c.JSON(200, usersResponse)
 	}
 }
 

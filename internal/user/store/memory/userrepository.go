@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"admin-panel/internal/user"
 	"admin-panel/internal/user/domain"
 	"admin-panel/internal/user/store"
 )
@@ -28,6 +29,10 @@ func (r *UserRepository) FindByEmail(email string) (*domain.User, error) {
 		}
 	}
 	return nil, store.ErrRecordNotFound
+}
+
+func (r *UserRepository) FindByFilters(f *user.Filters) ([]*domain.User, error) {
+	return []*domain.User{}, nil
 }
 
 func (r *UserRepository) FindById(id int) (*domain.User, error) {

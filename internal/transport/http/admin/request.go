@@ -36,3 +36,29 @@ func (u *UserUpdateRequest) Validate() ValidationErrors {
 	}
 	return errs
 }
+
+type UserFiltersQuery struct {
+	Email     *string `schema:"email"`
+	FirstName *string `schema:"first_name"`
+	LastName  *string `schema:"last_name"`
+	MinAge    *int16  `schema:"min_age"`
+	MaxAge    *int16  `schema:"max_age"`
+}
+
+func (u *UserFiltersQuery) Validate() ValidationErrors {
+	var errs ValidationErrors
+	if u.Email == nil && u.FirstName == nil && u.LastName == nil && u.MinAge == nil && u.MaxAge != nil {
+		errs = append(errs, ErrEmptyFilters)
+	}
+	if u.MinAge != nil {
+		if *u.MinAge < 0 {
+			errs = append(errs, ErrMinAge)
+		}
+	}
+	if u.MaxAge != nil {
+		if *u.MaxAge > 255 {
+			errs = append(errs, ErrMaxAge)
+		}
+	}
+	return errs
+}

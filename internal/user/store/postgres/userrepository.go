@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"admin-panel/internal/user"
 	"admin-panel/internal/user/domain"
 	"admin-panel/internal/user/store"
 
@@ -59,6 +60,35 @@ func (r *UserRepository) FindByEmail(email string) (*domain.User, error) {
 		return nil, err
 	}
 	return row.toUser(), nil
+}
+
+
+
+func (r *UserRepository) FindByFilters(f *user.Filters) ([]*domain.User, error) {
+	query, args, err := FindByFiltersQuery(f)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users := make([]*domain.User, 0)
+	for rows.Next() {
+		var row userRow
+		if err := rows.Scan(
+			&row.ID, &row.Email, &row.FirstName, &row.LastName, &row.Age,
+		); err != nil {
+			return nil, err
+		}
+		users = append(users, row.toUser())
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return users, nil
 }
 
 func (r *UserRepository) Update(dto *domain.UserUpdate) (*domain.User, error) {

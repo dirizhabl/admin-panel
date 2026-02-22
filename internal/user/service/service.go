@@ -1,6 +1,7 @@
 package service
 
 import (
+	"admin-panel/internal/user"
 	"admin-panel/internal/user/domain"
 	"admin-panel/internal/user/store"
 )
@@ -43,6 +44,22 @@ func (s *Service) FindUserByEmail(email string) (UserReadOut, error) {
 	}
 
 	return toUserReadOut(u), nil
+}
+
+func (s *Service) FindUsersByFilters(f *user.Filters) ([]UserReadOut, error) {
+	if err := f.Validate(); err != nil {
+		return []UserReadOut{}, err
+	}
+	users, err := s.store.User().FindByFilters(f)
+	if err != nil {
+		return []UserReadOut{}, err
+	}
+	out := make([]UserReadOut, len(users))
+	for i, u := range users {
+		out[i] = toUserReadOut(u)
+	}
+
+	return out, nil
 }
 
 func (s *Service) UpdateUser(in *UserUpdateIn) (UserReadOut, error) {
