@@ -6,7 +6,11 @@ import (
 	"net/http"
 
 	"admin-panel/internal/user/store"
+
+	"github.com/gorilla/schema"
 )
+
+var decoder = schema.NewDecoder()
 
 type context struct {
 	w http.ResponseWriter
@@ -32,6 +36,18 @@ func (c *context) BindJson(body Body) error {
 
 	if err := dec.Decode(body); err != nil {
 		c.JSON(400, toErrorResponse(err.Error()))
+		return err
+	}
+	if errs := body.Validate(); len(errs) > 0 {
+		c.JSON(422, toErrorsResponse(errs.Errors()))
+		return errs
+	}
+	return nil
+}
+
+func (c *context) BindQueryParams(body Body) error {
+	if err := decoder.Decode(body, c.r.URL.Query()); err != nil {
+		c.JSON(422, toErrorResponse(err.Error()))
 		return err
 	}
 	if errs := body.Validate(); len(errs) > 0 {

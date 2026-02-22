@@ -9,10 +9,7 @@ import (
 	"admin-panel/internal/user/service"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/schema"
 )
-
-var decoder = schema.NewDecoder()
 
 func (h *Handler) CreateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -48,13 +45,7 @@ func (h *Handler) FindUsersByParams() http.HandlerFunc {
 
 		var query UserFiltersQuery
 
-		if err := decoder.Decode(&query, r.URL.Query()); err != nil {
-			c.Error(err)
-			return
-		}
-
-		if err := query.Validate(); err != nil {
-			c.Error(err)
+		if err := c.BindQueryParams(&query); err != nil {
 			return
 		}
 

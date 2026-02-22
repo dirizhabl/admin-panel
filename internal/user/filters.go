@@ -14,7 +14,7 @@ type Filters struct {
 
 func (f *Filters) Validate() error {
 	if f.MinAge != nil && f.MaxAge != nil {
-		if *f.MinAge < *f.MaxAge {
+		if *f.MinAge > *f.MaxAge {
 			return ErrMinMaxAge
 		}
 	}
