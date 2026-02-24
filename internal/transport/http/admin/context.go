@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	"admin-panel/internal/user/store"
+	"admin-panel/pkg/apperrors"
 
 	"github.com/gorilla/schema"
 )
@@ -29,41 +29,59 @@ func (c *context) JSON(statusCode int, response any) {
 
 func (c *context) BindJson(body Body) error {
 	if c.r.Body == nil {
-		c.JSON(400, toErrorResponse("empty body"))
+		return apperrors.ValidationError("empty body")
 	}
 	dec := json.NewDecoder(c.r.Body)
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(body); err != nil {
-		c.JSON(400, toErrorResponse(err.Error()))
-		return err
+		return apperrors.ValidationError("cannot decode body")
 	}
+
+	apperr := apperrors.ValidationError("calidation error")
 	if errs := body.Validate(); len(errs) > 0 {
-		c.JSON(422, toErrorsResponse(errs.Errors()))
-		return errs
+		for _, e := range errs {
+			apperr.Details = append(apperr.Details, apperrors.Detail{
+				Field:   e.Field,
+				Message: e.Error(),
+			})
+		}
+		return apperr
 	}
 	return nil
 }
 
 func (c *context) BindQueryParams(body Body) error {
 	if err := decoder.Decode(body, c.r.URL.Query()); err != nil {
-		c.JSON(422, toErrorResponse(err.Error()))
-		return err
+		return apperrors.ValidationError("cannot decode query params")
 	}
+	apperr := apperrors.ValidationError("validation error")
 	if errs := body.Validate(); len(errs) > 0 {
-		c.JSON(422, toErrorsResponse(errs.Errors()))
-		return errs
+		for _, e := range errs {
+			apperr.Details = append(apperr.Details, apperrors.Detail{
+				Field:   e.Field,
+				Message: e.Error(),
+			})
+		}
+		return apperr
 	}
 	return nil
 }
 
 func (c *context) Error(err error) {
+	var apperr apperrors.AppError
+
 	switch {
-	case errors.Is(err, store.ErrRecordExists):
-		c.JSON(409, toErrorResponse(err.Error()))
-	case errors.Is(err, store.ErrRecordNotFound):
-		c.JSON(404, toErrorResponse(err.Error()))
-	default:
-		c.JSON(500, toErrorResponse(err.Error()))
+	case errors.As(err, &apperr):
+		c.JSON(MapCodeToStatusCode()[apperr.Code], apperr)
+	}
+}
+
+func MapCodeToStatusCode() map[apperrors.Code]int {
+	return map[apperrors.Code]int{
+		apperrors.BadRequest: 400,
+		apperrors.NotFound:   404,
+		apperrors.Conflict:   409,
+		apperrors.Validation: 422,
 	}
 }

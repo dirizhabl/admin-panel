@@ -17,6 +17,7 @@ func (h *Handler) CreateUser() http.HandlerFunc {
 
 		req := &UserCreateRequest{}
 		if err := c.BindJson(req); err != nil {
+			c.Error(err)
 			return
 		}
 
@@ -38,7 +39,6 @@ func (h *Handler) CreateUser() http.HandlerFunc {
 	}
 }
 
-
 func (h *Handler) FindUsersByParams() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		c := NewHandlerContext(w, r)
@@ -46,6 +46,7 @@ func (h *Handler) FindUsersByParams() http.HandlerFunc {
 		var query UserFiltersQuery
 
 		if err := c.BindQueryParams(&query); err != nil {
+			c.Error(err)
 			return
 		}
 
@@ -107,6 +108,7 @@ func (h *Handler) UpdateUser() http.HandlerFunc {
 
 		req := &UserUpdateRequest{}
 		if err := c.BindJson(req); err != nil {
+			c.Error(err)
 			return
 		}
 

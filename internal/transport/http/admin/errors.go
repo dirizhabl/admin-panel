@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"admin-panel/pkg/apperrors"
 	"errors"
 	"strings"
 )
@@ -15,7 +16,7 @@ var (
 	ErrMaxAge            = errors.New("max age must be less 255")
 )
 
-type ValidationErrors []error
+type ValidationErrors []apperrors.ErrorDetail
 
 func (v ValidationErrors) Error() string {
 	var sb strings.Builder

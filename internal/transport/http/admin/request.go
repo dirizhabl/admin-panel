@@ -1,5 +1,7 @@
 package admin
 
+import "admin-panel/pkg/apperrors"
+
 type Body interface {
 	Validate() ValidationErrors
 }
@@ -12,13 +14,13 @@ type UserCreateRequest struct {
 func (u *UserCreateRequest) Validate() ValidationErrors {
 	var errs ValidationErrors
 	if len(u.Password) < 7 {
-		errs = append(errs, ErrWeakPassword)
+		errs = append(errs, apperrors.ErrorDetail{Err: ErrWeakPassword, Field: "password"})
 	}
 	if u.Email == "" {
-		errs = append(errs, ErrEmptyEmail)
+		errs = append(errs, apperrors.ErrorDetail{Err: ErrEmptyEmail, Field: "email"})
 	}
 	if !IsValidEmail(u.Email) {
-		errs = append(errs, ErrNotValidEmail)
+		errs = append(errs, apperrors.ErrorDetail{Err: ErrNotValidEmail, Field: "email"})
 	}
 	return errs
 }
@@ -32,7 +34,7 @@ type UserUpdateRequest struct {
 func (u *UserUpdateRequest) Validate() ValidationErrors {
 	var errs ValidationErrors
 	if u.FirstName == nil && u.LastName == nil && u.Age == nil {
-		errs = append(errs, ErrEmptyFieldsUpdate)
+		errs = append(errs, apperrors.ErrorDetail{Err: ErrEmptyFieldsUpdate})
 	}
 	return errs
 }
@@ -48,16 +50,16 @@ type UserFiltersQuery struct {
 func (u *UserFiltersQuery) Validate() ValidationErrors {
 	var errs ValidationErrors
 	if u.Email == nil && u.FirstName == nil && u.LastName == nil && u.MinAge == nil && u.MaxAge != nil {
-		errs = append(errs, ErrEmptyFilters)
+		errs = append(errs, apperrors.ErrorDetail{Err: ErrEmptyFilters})
 	}
 	if u.MinAge != nil {
 		if *u.MinAge < 0 {
-			errs = append(errs, ErrMinAge)
+			errs = append(errs, apperrors.ErrorDetail{Err: ErrMinAge})
 		}
 	}
 	if u.MaxAge != nil {
 		if *u.MaxAge > 255 {
-			errs = append(errs, ErrMaxAge)
+			errs = append(errs, apperrors.ErrorDetail{Err: ErrMaxAge})
 		}
 	}
 	return errs

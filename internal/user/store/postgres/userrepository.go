@@ -62,8 +62,6 @@ func (r *UserRepository) FindByEmail(email string) (*domain.User, error) {
 	return row.toUser(), nil
 }
 
-
-
 func (r *UserRepository) FindByFilters(f *user.Filters) ([]*domain.User, error) {
 	query, args, err := FindByFiltersQuery(f)
 	if err != nil {
