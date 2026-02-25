@@ -2,17 +2,17 @@ package postgres
 
 import (
 	"admin-panel/internal/user/store"
+	"database/sql"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/jmoiron/sqlx"
 )
 
 type Store struct {
-	db             *sqlx.DB
+	db             *sql.DB
 	userRepository store.UserRepository
 }
 
-func New(db *sqlx.DB) store.Store {
+func New(db *sql.DB) store.Store {
 	return &Store{
 		db: db,
 		userRepository: &UserRepository{

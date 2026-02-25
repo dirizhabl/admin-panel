@@ -1,17 +1,17 @@
 package postgres
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 	"testing"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/jmoiron/sqlx"
 )
 
-func TestDB(t *testing.T, databaseURL string) (*sqlx.DB, func(...string)) {
+func TestDB(t *testing.T, databaseURL string) (*sql.DB, func(...string)) {
 	t.Helper()
-	db, err := sqlx.Open("pgx", databaseURL)
+	db, err := sql.Open("pgx", databaseURL)
 	if err != nil {
 		t.Fatal(err)
 	}

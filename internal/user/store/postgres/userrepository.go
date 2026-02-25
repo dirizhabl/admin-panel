@@ -9,11 +9,10 @@ import (
 	"admin-panel/internal/user/store"
 
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jmoiron/sqlx"
 )
 
 type UserRepository struct {
-	db *sqlx.DB
+	db *sql.DB
 }
 
 func (r *UserRepository) Create(u *domain.User) error {
