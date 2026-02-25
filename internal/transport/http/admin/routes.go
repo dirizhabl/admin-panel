@@ -1,9 +1,11 @@
 package admin
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"admin-panel/internal/user"
 	"admin-panel/internal/user/service"
@@ -26,7 +28,9 @@ func (h *Handler) CreateUser() http.HandlerFunc {
 			Password: req.Password,
 		}
 
-		u, err := h.service.CreateUser(in)
+		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+		defer cancel()
+		u, err := h.service.CreateUser(ctx, in)
 		if err != nil {
 			c.Error(err)
 			return
@@ -58,7 +62,9 @@ func (h *Handler) FindUsersByParams() http.HandlerFunc {
 			MaxAge:    query.MaxAge,
 		}
 
-		users, err := h.service.FindUsersByFilters(f)
+		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+		defer cancel()
+		users, err := h.service.FindUsersByFilters(ctx, f)
 		if err != nil {
 			c.Error(err)
 			return
@@ -84,7 +90,9 @@ func (h *Handler) FindUserById() http.HandlerFunc {
 			return
 		}
 
-		u, err := h.service.FindUserById(id)
+		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+		defer cancel()
+		u, err := h.service.FindUserById(ctx, id)
 
 		if err != nil {
 			c.Error(err)
@@ -119,7 +127,9 @@ func (h *Handler) UpdateUser() http.HandlerFunc {
 			Age:       req.Age,
 		}
 
-		u, err := h.service.UpdateUser(in)
+		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+		defer cancel()
+		u, err := h.service.UpdateUser(ctx, in)
 		if err != nil {
 			c.Error(err)
 			return

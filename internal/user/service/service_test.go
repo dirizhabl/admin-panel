@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"context"
 	"math"
 	"testing"
 
@@ -36,12 +37,12 @@ func CreateUser(
 ) {
 	testCases := []struct {
 		name       string
-		prepareDTO func(store.Store) *service.UserCreateIn
+		prepareDTO func(context.Context, store.Store) *service.UserCreateIn
 		wantErr    error
 	}{
 		{
 			name: "empty email",
-			prepareDTO: func(s store.Store) *service.UserCreateIn {
+			prepareDTO: func(ctx context.Context, s store.Store) *service.UserCreateIn {
 				return &service.UserCreateIn{
 					Password: "123",
 				}
@@ -50,7 +51,7 @@ func CreateUser(
 		},
 		{
 			name: "weak password",
-			prepareDTO: func(s store.Store) *service.UserCreateIn {
+			prepareDTO: func(ctx context.Context, s store.Store) *service.UserCreateIn {
 				return &service.UserCreateIn{
 					Email:    "nil@nil.org",
 					Password: "123",
@@ -60,9 +61,9 @@ func CreateUser(
 		},
 		{
 			name: "user already exists",
-			prepareDTO: func(s store.Store) *service.UserCreateIn {
+			prepareDTO: func(ctx context.Context, s store.Store) *service.UserCreateIn {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 
 				return &service.UserCreateIn{
 					Email:    u.Email,
@@ -73,7 +74,7 @@ func CreateUser(
 		},
 		{
 			name: "ok",
-			prepareDTO: func(s store.Store) *service.UserCreateIn {
+			prepareDTO: func(ctx context.Context, s store.Store) *service.UserCreateIn {
 				return &service.UserCreateIn{
 					Email:    "nil@nil.org",
 					Password: "1231231",
@@ -85,10 +86,12 @@ func CreateUser(
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			store := newStore()
-			dto := tc.prepareDTO(store)
+
+			ctx := context.Background()
+			dto := tc.prepareDTO(ctx, store)
 			userService := service.New(store)
 
-			user, err := userService.CreateUser(dto)
+			user, err := userService.CreateUser(ctx, dto)
 
 			if tc.wantErr != nil {
 				assert.ErrorIs(t, err, tc.wantErr)
@@ -106,21 +109,21 @@ func FindUserById(
 ) {
 	testCases := []struct {
 		name      string
-		prepareId func(store.Store) int
+		prepareId func(context.Context, store.Store) int
 		wantErr   error
 	}{
 		{
 			name: "user not found",
-			prepareId: func(s store.Store) int {
+			prepareId: func(ctx context.Context, s store.Store) int {
 				return math.MaxInt64
 			},
 			wantErr: store.ErrRecordNotFound,
 		},
 		{
 			name: "ok",
-			prepareId: func(s store.Store) int {
+			prepareId: func(ctx context.Context, s store.Store) int {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return u.ID
 			},
 		},
@@ -129,10 +132,12 @@ func FindUserById(
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			store := newStore()
-			id := tc.prepareId(store)
+
+			ctx := context.Background()
+			id := tc.prepareId(ctx, store)
 			userService := service.New(store)
 
-			user, err := userService.FindUserById(id)
+			user, err := userService.FindUserById(ctx, id)
 
 			if tc.wantErr != nil {
 				assert.ErrorIs(t, err, tc.wantErr)
@@ -150,12 +155,12 @@ func FindUserByEmail(
 ) {
 	testCases := []struct {
 		name         string
-		prepareEmail func(store.Store) string
+		prepareEmail func(context.Context, store.Store) string
 		wantErr      error
 	}{
 		{
 			name: "user not found",
-			prepareEmail: func(s store.Store) string {
+			prepareEmail: func(ctx context.Context, s store.Store) string {
 				u := domain.TestUser()
 				return u.Email
 			},
@@ -163,9 +168,9 @@ func FindUserByEmail(
 		},
 		{
 			name: "ok",
-			prepareEmail: func(s store.Store) string {
+			prepareEmail: func(ctx context.Context, s store.Store) string {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return u.Email
 			},
 		},
@@ -174,10 +179,12 @@ func FindUserByEmail(
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			store := newStore()
-			id := tc.prepareEmail(store)
+
+			ctx := context.Background()
+			id := tc.prepareEmail(ctx, store)
 			userService := service.New(store)
 
-			user, err := userService.FindUserByEmail(id)
+			user, err := userService.FindUserByEmail(ctx, id)
 
 			if tc.wantErr != nil {
 				assert.ErrorIs(t, err, tc.wantErr)
@@ -200,12 +207,12 @@ func UpdateUser(
 	t.Helper()
 	testCases := []struct {
 		name    string
-		prepare func(store.Store) *service.UserUpdateIn
+		prepare func(context.Context, store.Store) *service.UserUpdateIn
 		wantErr error
 	}{
 		{
 			name: "user not found",
-			prepare: func(s store.Store) *service.UserUpdateIn {
+			prepare: func(ctx context.Context, s store.Store) *service.UserUpdateIn {
 				id := math.MaxInt64
 				return &service.UserUpdateIn{
 					ID:        id,
@@ -218,18 +225,18 @@ func UpdateUser(
 		},
 		{
 			name: "no data",
-			prepare: func(s store.Store) *service.UserUpdateIn {
+			prepare: func(ctx context.Context, s store.Store) *service.UserUpdateIn {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return &service.UserUpdateIn{}
 			},
 			wantErr: service.ErrEmptyFieldsUpdate,
 		},
 		{
 			name: "ok",
-			prepare: func(s store.Store) *service.UserUpdateIn {
+			prepare: func(ctx context.Context, s store.Store) *service.UserUpdateIn {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return &service.UserUpdateIn{
 					ID:        u.ID,
 					FirstName: toPtr("john"),
@@ -240,9 +247,9 @@ func UpdateUser(
 		},
 		{
 			name: "ok/only first_name",
-			prepare: func(s store.Store) *service.UserUpdateIn {
+			prepare: func(ctx context.Context, s store.Store) *service.UserUpdateIn {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return &service.UserUpdateIn{
 					ID:        u.ID,
 					FirstName: toPtr("john"),
@@ -251,9 +258,9 @@ func UpdateUser(
 		},
 		{
 			name: "ok/only last_name",
-			prepare: func(s store.Store) *service.UserUpdateIn {
+			prepare: func(ctx context.Context, s store.Store) *service.UserUpdateIn {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return &service.UserUpdateIn{
 					ID:       u.ID,
 					LastName: toPtr("doe"),
@@ -262,9 +269,9 @@ func UpdateUser(
 		},
 		{
 			name: "ok/only age",
-			prepare: func(s store.Store) *service.UserUpdateIn {
+			prepare: func(ctx context.Context, s store.Store) *service.UserUpdateIn {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return &service.UserUpdateIn{
 					ID:  u.ID,
 					Age: toPtr(int16(18)),
@@ -278,8 +285,9 @@ func UpdateUser(
 			store := newStore()
 			userService := service.New(store)
 
-			dto := tc.prepare(store)
-			user, err := userService.UpdateUser(dto)
+			ctx := context.Background()
+			dto := tc.prepare(ctx, store)
+			user, err := userService.UpdateUser(ctx, dto)
 
 			if tc.wantErr != nil {
 				assert.ErrorIs(t, err, tc.wantErr)

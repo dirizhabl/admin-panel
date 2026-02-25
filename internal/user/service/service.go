@@ -1,11 +1,13 @@
 package service
 
 import (
+	"context"
+	"errors"
+	
 	"admin-panel/internal/user"
 	"admin-panel/internal/user/domain"
 	"admin-panel/internal/user/store"
 	"admin-panel/pkg/apperr"
-	"errors"
 )
 
 type Service struct {
@@ -18,12 +20,12 @@ func New(store store.Store) *Service {
 	}
 }
 
-func (s *Service) CreateUser(in *UserCreateIn) (UserCreateOut, error) {
+func (s *Service) CreateUser(ctx context.Context, in *UserCreateIn) (UserCreateOut, error) {
 	u, err := domain.NewUser(in.Email, in.Password)
 	if err != nil {
 		return UserCreateOut{}, apperr.NewValidation(err, err.Error())
 	}
-	if err := s.store.User().Create(u); err != nil {
+	if err := s.store.User().Create(ctx, u); err != nil {
 		if errors.Is(err, store.ErrRecordExists) {
 			return UserCreateOut{}, apperr.NewConflict(err, err.Error())
 		}
@@ -33,8 +35,8 @@ func (s *Service) CreateUser(in *UserCreateIn) (UserCreateOut, error) {
 	return UserCreateOut{ID: u.ID}, nil
 }
 
-func (s *Service) FindUserById(id int) (UserReadOut, error) {
-	u, err := s.store.User().FindById(id)
+func (s *Service) FindUserById(ctx context.Context, id int) (UserReadOut, error) {
+	u, err := s.store.User().FindById(ctx, id)
 	if err != nil {
 		if errors.Is(err, store.ErrRecordNotFound) {
 			return UserReadOut{}, apperr.NewNotFound(err, err.Error())
@@ -45,8 +47,8 @@ func (s *Service) FindUserById(id int) (UserReadOut, error) {
 	return toUserReadOut(u), nil
 }
 
-func (s *Service) FindUserByEmail(email string) (UserReadOut, error) {
-	u, err := s.store.User().FindByEmail(email)
+func (s *Service) FindUserByEmail(ctx context.Context, email string) (UserReadOut, error) {
+	u, err := s.store.User().FindByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, store.ErrRecordNotFound) {
 			return UserReadOut{}, apperr.NewNotFound(err, err.Error())
@@ -57,11 +59,11 @@ func (s *Service) FindUserByEmail(email string) (UserReadOut, error) {
 	return toUserReadOut(u), nil
 }
 
-func (s *Service) FindUsersByFilters(f *user.Filters) ([]UserReadOut, error) {
+func (s *Service) FindUsersByFilters(ctx context.Context, f *user.Filters) ([]UserReadOut, error) {
 	if err := f.Validate(); err != nil {
 		return []UserReadOut{}, apperr.NewValidation(err, err.Error())
 	}
-	users, err := s.store.User().FindByFilters(f)
+	users, err := s.store.User().FindByFilters(ctx, f)
 	if err != nil {
 		return []UserReadOut{}, apperr.NewInternal(err)
 	}
@@ -73,7 +75,7 @@ func (s *Service) FindUsersByFilters(f *user.Filters) ([]UserReadOut, error) {
 	return out, nil
 }
 
-func (s *Service) UpdateUser(in *UserUpdateIn) (UserReadOut, error) {
+func (s *Service) UpdateUser(ctx context.Context, in *UserUpdateIn) (UserReadOut, error) {
 	if err := in.IsEmpty(); err != nil {
 		return UserReadOut{}, apperr.NewValidation(err, err.Error())
 	}
@@ -86,7 +88,7 @@ func (s *Service) UpdateUser(in *UserUpdateIn) (UserReadOut, error) {
 	if err := dto.Validate(); err != nil {
 		return UserReadOut{}, apperr.NewValidation(err, err.Error())
 	}
-	u, err := s.store.User().Update(dto)
+	u, err := s.store.User().Update(ctx, dto)
 	if err != nil {
 		if errors.Is(err, store.ErrRecordNotFound) {
 			return UserReadOut{}, apperr.NewNotFound(err, err.Error())

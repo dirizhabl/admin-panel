@@ -22,23 +22,23 @@ var (
 	decoder = schema.NewDecoder()
 )
 
-type context struct {
+type Context struct {
 	w http.ResponseWriter
 	r *http.Request
 	l *logrus.Logger
 }
 
-func NewHandlerContext(w http.ResponseWriter, r *http.Request, l *logrus.Logger) *context {
-	return &context{w: w, r: r, l: l}
+func NewHandlerContext(w http.ResponseWriter, r *http.Request, l *logrus.Logger) *Context {
+	return &Context{w: w, r: r, l: l}
 }
 
-func (c *context) JSON(statusCode int, response any) {
+func (c *Context) JSON(statusCode int, response any) {
 	c.w.Header().Set("Content-Type", "application/json")
 	c.w.WriteHeader(statusCode)
 	json.NewEncoder(c.w).Encode(response)
 }
 
-func (c *context) BindJson(body Body) error {
+func (c *Context) BindJson(body Body) error {
 	if c.r.Body == nil {
 		return apperr.NewValidation(nil, "empty body")
 	}
@@ -54,7 +54,7 @@ func (c *context) BindJson(body Body) error {
 	return nil
 }
 
-func (c *context) BindQueryParams(body Body) error {
+func (c *Context) BindQueryParams(body Body) error {
 	if err := decoder.Decode(body, c.r.URL.Query()); err != nil {
 		return apperr.NewValidation(err, "cannot decode query params")
 	}
@@ -64,7 +64,7 @@ func (c *context) BindQueryParams(body Body) error {
 	return nil
 }
 
-func (c *context) Error(err error) {
+func (c *Context) Error(err error) {
 	var appErr *apperr.ErrorResponse
 
 	switch {

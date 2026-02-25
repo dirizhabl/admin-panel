@@ -1,8 +1,10 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"admin-panel/internal/user"
 	"admin-panel/internal/user/domain"
@@ -15,9 +17,12 @@ type UserRepository struct {
 	db *sql.DB
 }
 
-func (r *UserRepository) Create(u *domain.User) error {
+func (r *UserRepository) Create(ctx context.Context, u *domain.User) error {
 	const op = "UserRepository.Create"
-	err := r.db.QueryRow(
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	defer cancel()
+	err := r.db.QueryRowContext(
+		ctx,
 		"INSERT INTO users(email, hashed_password) VALUES ($1, $2) RETURNING id, email",
 		u.Email,
 		u.HashedPassword,
@@ -32,11 +37,13 @@ func (r *UserRepository) Create(u *domain.User) error {
 	return nil
 }
 
-func (r *UserRepository) FindById(id int) (*domain.User, error) {
+func (r *UserRepository) FindById(ctx context.Context, id int) (*domain.User, error) {
 	const op = "UserRepository.FindById"
 	var row userRow
-	if err := r.db.QueryRow(
-		"SELECT id, email, first_name, last_name, age FROM users WHERE id = $1", id,
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	defer cancel()
+	if err := r.db.QueryRowContext(
+		ctx, "SELECT id, email, first_name, last_name, age FROM users WHERE id = $1", id,
 	).Scan(
 		&row.ID, &row.Email, &row.FirstName, &row.LastName, &row.Age,
 	); err != nil {
@@ -48,11 +55,13 @@ func (r *UserRepository) FindById(id int) (*domain.User, error) {
 	return row.toUser(), nil
 }
 
-func (r *UserRepository) FindByEmail(email string) (*domain.User, error) {
+func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
 	const op = "UserRepository.FindByEmail"
 	var row userRow
-	if err := r.db.QueryRow(
-		"SELECT id, email, first_name, last_name, age FROM users WHERE email = $1", email,
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	defer cancel()
+	if err := r.db.QueryRowContext(
+		ctx, "SELECT id, email, first_name, last_name, age FROM users WHERE email = $1", email,
 	).Scan(
 		&row.ID, &row.Email, &row.FirstName, &row.LastName, &row.Age,
 	); err != nil {
@@ -64,13 +73,15 @@ func (r *UserRepository) FindByEmail(email string) (*domain.User, error) {
 	return row.toUser(), nil
 }
 
-func (r *UserRepository) FindByFilters(f *user.Filters) ([]*domain.User, error) {
+func (r *UserRepository) FindByFilters(ctx context.Context, f *user.Filters) ([]*domain.User, error) {
 	const op = "UserRepository.FindByFilters"
 	query, args, err := FindByFiltersQuery(f)
 	if err != nil {
 		return nil, store.NewOpError(op, err)
 	}
-	rows, err := r.db.Query(query, args...)
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	defer cancel()
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, store.NewOpError(op, err)
 	}
@@ -92,14 +103,16 @@ func (r *UserRepository) FindByFilters(f *user.Filters) ([]*domain.User, error) 
 	return users, nil
 }
 
-func (r *UserRepository) Update(dto *domain.UserUpdate) (*domain.User, error) {
+func (r *UserRepository) Update(ctx context.Context, dto *domain.UserUpdate) (*domain.User, error) {
 	const op = "UserRepository.Update"
 	query, args, err := UpdateQuery(dto)
 	if err != nil {
 		return nil, store.NewOpError(op, err)
 	}
 	var row userRow
-	if err := r.db.QueryRow(query, args...).Scan(
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	defer cancel()
+	if err := r.db.QueryRowContext(ctx, query, args...).Scan(
 		&row.ID, &row.Email, &row.FirstName, &row.LastName, &row.Age,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

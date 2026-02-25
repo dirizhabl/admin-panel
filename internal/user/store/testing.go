@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"math"
 	"testing"
 
@@ -20,21 +21,21 @@ func UserRepositoryCreate(
 	t.Helper()
 	testCases := []struct {
 		name    string
-		prepare func(Store) *domain.User
+		prepare func(context.Context, Store) *domain.User
 		wantErr error
 	}{
 		{
 			name: "user already exists",
-			prepare: func(s Store) *domain.User {
+			prepare: func(ctx context.Context, s Store) *domain.User {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return u
 			},
 			wantErr: ErrRecordExists,
 		},
 		{
 			name: "ok",
-			prepare: func(s Store) *domain.User {
+			prepare: func(ctx context.Context, s Store) *domain.User {
 				return domain.TestUser()
 			},
 		},
@@ -45,8 +46,10 @@ func UserRepositoryCreate(
 			store, teardown := newStore()
 			defer teardown()
 
-			user := tc.prepare(store)
-			err := store.User().Create(user)
+			ctx := context.Background()
+			user := tc.prepare(ctx, store)
+
+			err := store.User().Create(ctx, user)
 
 			if tc.wantErr != nil {
 				assert.ErrorIs(t, err, tc.wantErr)
@@ -64,21 +67,21 @@ func UserRepositoryFindById(
 	t.Helper()
 	testCases := []struct {
 		name    string
-		prepare func(Store) int
+		prepare func(context.Context, Store) int
 		wantErr error
 	}{
 		{
 			name: "user not found",
-			prepare: func(s Store) int {
+			prepare: func(ctx context.Context, s Store) int {
 				return math.MaxInt64
 			},
 			wantErr: ErrRecordNotFound,
 		},
 		{
 			name: "ok",
-			prepare: func(s Store) int {
+			prepare: func(ctx context.Context, s Store) int {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return u.ID
 			},
 		},
@@ -89,8 +92,10 @@ func UserRepositoryFindById(
 			store, teardown := newStore()
 			defer teardown()
 
-			id := tc.prepare(store)
-			user, err := store.User().FindById(id)
+			ctx := context.Background()
+			id := tc.prepare(ctx, store)
+
+			user, err := store.User().FindById(ctx, id)
 
 			if tc.wantErr != nil {
 				assert.ErrorIs(t, err, tc.wantErr)
@@ -110,21 +115,21 @@ func UserRepositoryFindByEmail(
 	t.Helper()
 	testCases := []struct {
 		name    string
-		prepare func(Store) string
+		prepare func(context.Context, Store) string
 		wantErr error
 	}{
 		{
 			name: "user not found",
-			prepare: func(s Store) string {
+			prepare: func(ctx context.Context, s Store) string {
 				return "nil@nil.org"
 			},
 			wantErr: ErrRecordNotFound,
 		},
 		{
 			name: "ok",
-			prepare: func(s Store) string {
+			prepare: func(ctx context.Context, s Store) string {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return u.Email
 			},
 		},
@@ -135,8 +140,10 @@ func UserRepositoryFindByEmail(
 			store, teardown := newStore()
 			defer teardown()
 
-			email := tc.prepare(store)
-			user, err := store.User().FindByEmail(email)
+			ctx := context.Background()
+			email := tc.prepare(ctx, store)
+
+			user, err := store.User().FindByEmail(ctx, email)
 
 			if tc.wantErr != nil {
 				assert.ErrorIs(t, err, tc.wantErr)
@@ -156,12 +163,12 @@ func UserRepositoryUpdate(
 	t.Helper()
 	testCases := []struct {
 		name    string
-		prepare func(Store) *domain.UserUpdate
+		prepare func(context.Context, Store) *domain.UserUpdate
 		wantErr error
 	}{
 		{
 			name: "user not found",
-			prepare: func(s Store) *domain.UserUpdate {
+			prepare: func(ctx context.Context, s Store) *domain.UserUpdate {
 				id := math.MaxInt64
 				return &domain.UserUpdate{
 					ID: id,
@@ -171,9 +178,9 @@ func UserRepositoryUpdate(
 		},
 		{
 			name: "ok",
-			prepare: func(s Store) *domain.UserUpdate {
+			prepare: func(ctx context.Context, s Store) *domain.UserUpdate {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return &domain.UserUpdate{
 					ID:        u.ID,
 					FirstName: toPtr("john"),
@@ -184,9 +191,9 @@ func UserRepositoryUpdate(
 		},
 		{
 			name: "ok/only first_name",
-			prepare: func(s Store) *domain.UserUpdate {
+			prepare: func(ctx context.Context, s Store) *domain.UserUpdate {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return &domain.UserUpdate{
 					ID:        u.ID,
 					FirstName: toPtr("john"),
@@ -195,9 +202,9 @@ func UserRepositoryUpdate(
 		},
 		{
 			name: "ok/only last_name",
-			prepare: func(s Store) *domain.UserUpdate {
+			prepare: func(ctx context.Context, s Store) *domain.UserUpdate {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return &domain.UserUpdate{
 					ID:       u.ID,
 					LastName: toPtr("doe"),
@@ -206,9 +213,9 @@ func UserRepositoryUpdate(
 		},
 		{
 			name: "ok/only age",
-			prepare: func(s Store) *domain.UserUpdate {
+			prepare: func(ctx context.Context, s Store) *domain.UserUpdate {
 				u := domain.TestUser()
-				s.User().Create(u)
+				s.User().Create(ctx, u)
 				return &domain.UserUpdate{
 					ID:  u.ID,
 					Age: toPtr(int16(18)),
@@ -222,8 +229,10 @@ func UserRepositoryUpdate(
 			store, teardown := newStore()
 			defer teardown()
 
-			dto := tc.prepare(store)
-			user, err := store.User().Update(dto)
+			ctx := context.Background()
+			dto := tc.prepare(ctx, store)
+
+			user, err := store.User().Update(ctx, dto)
 
 			if tc.wantErr != nil {
 				assert.ErrorIs(t, err, tc.wantErr)
