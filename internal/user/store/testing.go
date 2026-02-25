@@ -167,11 +167,33 @@ func UserRepositoryUpdate(
 		wantErr error
 	}{
 		{
+			name: "empty input/user not exists",
+			prepare: func(ctx context.Context, s Store) *domain.UserUpdate {
+				id := math.MaxInt64
+				return &domain.UserUpdate{
+					ID: id,
+				}
+			},
+			wantErr: ErrNothingToUpdate,
+		},
+		{
+			name: "empty input/user exists",
+			prepare: func(ctx context.Context, s Store) *domain.UserUpdate {
+				u := domain.TestUser()
+				s.User().Create(ctx, u)
+				return &domain.UserUpdate{
+					ID: u.ID,
+				}
+			},
+			wantErr: ErrNothingToUpdate,
+		},
+		{
 			name: "user not found",
 			prepare: func(ctx context.Context, s Store) *domain.UserUpdate {
 				id := math.MaxInt64
 				return &domain.UserUpdate{
 					ID: id,
+					FirstName: toPtr("john"),
 				}
 			},
 			wantErr: ErrRecordNotFound,

@@ -11,17 +11,18 @@ import (
 	"admin-panel/internal/user/store"
 
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type UserRepository struct {
-	db *sql.DB
+	db *pgxpool.Pool
 }
 
 func (r *UserRepository) Create(ctx context.Context, u *domain.User) error {
 	const op = "UserRepository.Create"
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
-	err := r.db.QueryRowContext(
+	err := r.db.QueryRow(
 		ctx,
 		"INSERT INTO users(email, hashed_password) VALUES ($1, $2) RETURNING id, email",
 		u.Email,
@@ -42,7 +43,7 @@ func (r *UserRepository) FindById(ctx context.Context, id int) (*domain.User, er
 	var row userRow
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
-	if err := r.db.QueryRowContext(
+	if err := r.db.QueryRow(
 		ctx, "SELECT id, email, first_name, last_name, age FROM users WHERE id = $1", id,
 	).Scan(
 		&row.ID, &row.Email, &row.FirstName, &row.LastName, &row.Age,
@@ -60,7 +61,7 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*domain
 	var row userRow
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
-	if err := r.db.QueryRowContext(
+	if err := r.db.QueryRow(
 		ctx, "SELECT id, email, first_name, last_name, age FROM users WHERE email = $1", email,
 	).Scan(
 		&row.ID, &row.Email, &row.FirstName, &row.LastName, &row.Age,
@@ -81,7 +82,7 @@ func (r *UserRepository) FindByFilters(ctx context.Context, f *user.Filters) ([]
 	}
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
-	rows, err := r.db.QueryContext(ctx, query, args...)
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, store.NewOpError(op, err)
 	}
@@ -112,7 +113,7 @@ func (r *UserRepository) Update(ctx context.Context, dto *domain.UserUpdate) (*d
 	var row userRow
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
-	if err := r.db.QueryRowContext(ctx, query, args...).Scan(
+	if err := r.db.QueryRow(ctx, query, args...).Scan(
 		&row.ID, &row.Email, &row.FirstName, &row.LastName, &row.Age,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

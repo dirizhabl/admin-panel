@@ -47,6 +47,10 @@ func (r *UserRepository) FindById(ctx context.Context, id int) (*domain.User, er
 }
 
 func (r *UserRepository) Update(ctx context.Context, dto *domain.UserUpdate) (*domain.User, error) {
+	if !(dto.FirstName != nil || dto.LastName != nil || dto.Age != nil){
+		return nil, store.ErrNothingToUpdate
+	}
+
 	for _, realUser := range r.users {
 		if dto.ID == realUser.ID {
 			if dto.FirstName != nil {

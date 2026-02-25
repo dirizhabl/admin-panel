@@ -1,9 +1,10 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"admin-panel/internal/config"
 	adminHTTP "admin-panel/internal/transport/http/admin"
@@ -12,6 +13,7 @@ import (
 	"admin-panel/internal/user/store/postgres"
 
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/sirupsen/logrus"
 )
@@ -21,7 +23,9 @@ func main() {
 
 	logger := logrus.New()
 
-	db, err := newOpenDB(&config.Store)
+	dsn := &config.Store.DatabaseURL
+
+	db, err := newOpenDB(*dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,15 +52,26 @@ func main() {
 	}
 }
 
-func newOpenDB(config *config.Store) (*sql.DB, error) {
-	db, err := sql.Open("pgx", config.DatabaseURL)
+func newOpenDB(dsn string) (*pgxpool.Pool, error) {
+	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := db.Ping(); err != nil {
+	config.MaxConns = 10
+	config.MaxConns = 2
+	config.MaxConnLifetime = time.Hour
+
+	pool, err := pgxpool.NewWithConfig(context.Background(), config)
+	if err != nil {
 		return nil, err
 	}
 
-	return db, nil
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := pool.Ping(ctx); err != nil {
+		return nil, err
+	}
+
+	return pool, nil
 }
