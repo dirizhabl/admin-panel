@@ -1,5 +1,7 @@
 package domain
 
+import "admin-panel/pkg/apperr"
+
 type UserUpdate struct {
 	ID        int
 	FirstName *string
@@ -8,8 +10,8 @@ type UserUpdate struct {
 }
 
 func (u *UserUpdate) Validate() error {
-	if u.FirstName == nil && u.LastName == nil && u.Age == nil {
-		return ErrEmptyFieldsUpdate
+	if u.Age != nil && *u.Age < 0 {
+		return apperr.ErrorDetail{Err: ErrNegativeAge, Field: "age"}
 	}
 	return nil
 }

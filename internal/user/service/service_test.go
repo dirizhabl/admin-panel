@@ -223,7 +223,7 @@ func UpdateUser(
 				s.User().Create(u)
 				return &service.UserUpdateIn{}
 			},
-			wantErr: domain.ErrEmptyFieldsUpdate,
+			wantErr: service.ErrEmptyFieldsUpdate,
 		},
 		{
 			name: "ok",

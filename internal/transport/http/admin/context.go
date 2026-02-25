@@ -5,20 +5,31 @@ import (
 	"errors"
 	"net/http"
 
-	"admin-panel/pkg/apperrors"
+	"admin-panel/pkg/apperr"
 
 	"github.com/gorilla/schema"
+	"github.com/sirupsen/logrus"
 )
 
-var decoder = schema.NewDecoder()
+var (
+	codeMapper = map[apperr.Code]int{
+		apperr.BadRequest: 400,
+		apperr.NotFound:   404,
+		apperr.Conflict:   409,
+		apperr.Validation: 422,
+		apperr.Internal:   500,
+	}
+	decoder = schema.NewDecoder()
+)
 
 type context struct {
 	w http.ResponseWriter
 	r *http.Request
+	l *logrus.Logger
 }
 
-func NewHandlerContext(w http.ResponseWriter, r *http.Request) *context {
-	return &context{w: w, r: r}
+func NewHandlerContext(w http.ResponseWriter, r *http.Request, l *logrus.Logger) *context {
+	return &context{w: w, r: r, l: l}
 }
 
 func (c *context) JSON(statusCode int, response any) {
@@ -29,59 +40,40 @@ func (c *context) JSON(statusCode int, response any) {
 
 func (c *context) BindJson(body Body) error {
 	if c.r.Body == nil {
-		return apperrors.ValidationError("empty body")
+		return apperr.NewValidation(nil, "empty body")
 	}
 	dec := json.NewDecoder(c.r.Body)
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(body); err != nil {
-		return apperrors.ValidationError("cannot decode body")
+		return apperr.NewValidation(err, "cannot decode body")
 	}
-
-	apperr := apperrors.ValidationError("calidation error")
 	if errs := body.Validate(); len(errs) > 0 {
-		for _, e := range errs {
-			apperr.Details = append(apperr.Details, apperrors.Detail{
-				Field:   e.Field,
-				Message: e.Error(),
-			})
-		}
-		return apperr
+		return apperr.NewValidationWithDetails(errs)
 	}
 	return nil
 }
 
 func (c *context) BindQueryParams(body Body) error {
 	if err := decoder.Decode(body, c.r.URL.Query()); err != nil {
-		return apperrors.ValidationError("cannot decode query params")
+		return apperr.NewValidation(err, "cannot decode query params")
 	}
-	apperr := apperrors.ValidationError("validation error")
 	if errs := body.Validate(); len(errs) > 0 {
-		for _, e := range errs {
-			apperr.Details = append(apperr.Details, apperrors.Detail{
-				Field:   e.Field,
-				Message: e.Error(),
-			})
-		}
-		return apperr
+		return apperr.NewValidationWithDetails(errs)
 	}
 	return nil
 }
 
 func (c *context) Error(err error) {
-	var apperr apperrors.AppError
+	var appErr *apperr.ErrorResponse
 
 	switch {
-	case errors.As(err, &apperr):
-		c.JSON(MapCodeToStatusCode()[apperr.Code], apperr)
-	}
-}
-
-func MapCodeToStatusCode() map[apperrors.Code]int {
-	return map[apperrors.Code]int{
-		apperrors.BadRequest: 400,
-		apperrors.NotFound:   404,
-		apperrors.Conflict:   409,
-		apperrors.Validation: 422,
+	case errors.As(err, &appErr):
+		if appErr.Code == apperr.Internal {
+			c.l.Error(appErr.Err.Error())
+		}
+		c.JSON(codeMapper[appErr.Code], appErr)
+	default:
+		c.JSON(500, err)
 	}
 }

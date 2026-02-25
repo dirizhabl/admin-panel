@@ -13,7 +13,7 @@ import (
 
 func (h *Handler) CreateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		c := NewHandlerContext(w, r)
+		c := NewHandlerContext(w, r, h.logger)
 
 		req := &UserCreateRequest{}
 		if err := c.BindJson(req); err != nil {
@@ -41,7 +41,7 @@ func (h *Handler) CreateUser() http.HandlerFunc {
 
 func (h *Handler) FindUsersByParams() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		c := NewHandlerContext(w, r)
+		c := NewHandlerContext(w, r, h.logger)
 
 		var query UserFiltersQuery
 
@@ -75,7 +75,7 @@ func (h *Handler) FindUsersByParams() http.HandlerFunc {
 
 func (h *Handler) FindUserById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		c := NewHandlerContext(w, r)
+		c := NewHandlerContext(w, r, h.logger)
 		pathVars := mux.Vars(r)
 
 		id, err := strconv.Atoi(pathVars["id"])
@@ -97,7 +97,7 @@ func (h *Handler) FindUserById() http.HandlerFunc {
 
 func (h *Handler) UpdateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		c := NewHandlerContext(w, r)
+		c := NewHandlerContext(w, r, h.logger)
 		pathVars := mux.Vars(r)
 
 		id, err := strconv.Atoi(pathVars["id"])

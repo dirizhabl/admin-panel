@@ -1,9 +1,9 @@
 package admin
 
-import "admin-panel/pkg/apperrors"
+import "admin-panel/pkg/apperr"
 
 type Body interface {
-	Validate() ValidationErrors
+	Validate() []apperr.ErrorDetail
 }
 
 type UserCreateRequest struct {
@@ -11,16 +11,16 @@ type UserCreateRequest struct {
 	Password string `json:"password"`
 }
 
-func (u *UserCreateRequest) Validate() ValidationErrors {
-	var errs ValidationErrors
+func (u *UserCreateRequest) Validate() []apperr.ErrorDetail {
+	var errs = make([]apperr.ErrorDetail, 0)
 	if len(u.Password) < 7 {
-		errs = append(errs, apperrors.ErrorDetail{Err: ErrWeakPassword, Field: "password"})
+		errs = append(errs, apperr.ErrorDetail{Err: ErrWeakPassword, Field: "password"})
 	}
 	if u.Email == "" {
-		errs = append(errs, apperrors.ErrorDetail{Err: ErrEmptyEmail, Field: "email"})
+		errs = append(errs, apperr.ErrorDetail{Err: ErrEmptyEmail, Field: "email"})
 	}
 	if !IsValidEmail(u.Email) {
-		errs = append(errs, apperrors.ErrorDetail{Err: ErrNotValidEmail, Field: "email"})
+		errs = append(errs, apperr.ErrorDetail{Err: ErrNotValidEmail, Field: "email"})
 	}
 	return errs
 }
@@ -31,10 +31,10 @@ type UserUpdateRequest struct {
 	Age       *int16  `json:"age"`
 }
 
-func (u *UserUpdateRequest) Validate() ValidationErrors {
-	var errs ValidationErrors
-	if u.FirstName == nil && u.LastName == nil && u.Age == nil {
-		errs = append(errs, apperrors.ErrorDetail{Err: ErrEmptyFieldsUpdate})
+func (u *UserUpdateRequest) Validate() []apperr.ErrorDetail {
+	var errs = make([]apperr.ErrorDetail, 0)
+	if u.Age != nil && *u.Age < 0 {
+		errs = append(errs, apperr.ErrorDetail{Err: ErrNegativeAge, Field: "age"})
 	}
 	return errs
 }
@@ -47,20 +47,18 @@ type UserFiltersQuery struct {
 	MaxAge    *int16  `schema:"max_age"`
 }
 
-func (u *UserFiltersQuery) Validate() ValidationErrors {
-	var errs ValidationErrors
-	if u.Email == nil && u.FirstName == nil && u.LastName == nil && u.MinAge == nil && u.MaxAge != nil {
-		errs = append(errs, apperrors.ErrorDetail{Err: ErrEmptyFilters})
+func (u *UserFiltersQuery) Validate() []apperr.ErrorDetail {
+	var errs = make([]apperr.ErrorDetail, 0)
+
+	if u.MinAge != nil && *u.MinAge < 0 {
+		errs = append(errs, apperr.ErrorDetail{Err: ErrMinAge, Field: "min_age"})
 	}
-	if u.MinAge != nil {
-		if *u.MinAge < 0 {
-			errs = append(errs, apperrors.ErrorDetail{Err: ErrMinAge})
-		}
+	if u.MaxAge != nil && *u.MaxAge > 255 {
+		errs = append(errs, apperr.ErrorDetail{Err: ErrMaxAge, Field: "max_age"})
 	}
-	if u.MaxAge != nil {
-		if *u.MaxAge > 255 {
-			errs = append(errs, apperrors.ErrorDetail{Err: ErrMaxAge})
-		}
+	if u.MinAge != nil && u.MaxAge != nil && *u.MinAge > *u.MaxAge {
+		errs = append(errs, apperr.ErrorDetail{Err: ErrMaxAge})
 	}
+
 	return errs
 }
